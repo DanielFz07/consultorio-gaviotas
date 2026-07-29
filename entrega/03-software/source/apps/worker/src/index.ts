@@ -1,13 +1,29 @@
 import { Pool } from "pg";
 import nodemailer from "nodemailer";
 
-const pool = new Pool({
-  host: process.env.PGHOST ?? "localhost",
-  port: Number(process.env.PGPORT ?? 5432),
-  user: process.env.PGUSER ?? "consultorio",
-  password: process.env.PGPASSWORD ?? "consultorio",
-  database: process.env.PGDATABASE ?? "consultorio",
-});
+// Parse DATABASE_URL if set (Railway provides this; the PG* vars may not be set).
+function parseDbUrl(url: string) {
+  const u = new URL(url);
+  return {
+    host: u.hostname,
+    port: Number(u.port || 5432),
+    user: u.username,
+    password: decodeURIComponent(u.password),
+    database: u.pathname.replace(/^\//, ""),
+  };
+}
+
+const dbConfig = process.env.DATABASE_URL
+  ? parseDbUrl(process.env.DATABASE_URL)
+  : {
+      host: process.env.PGHOST ?? "localhost",
+      port: Number(process.env.PGPORT ?? 5432),
+      user: process.env.PGUSER ?? "consultorio",
+      password: process.env.PGPASSWORD ?? "consultorio",
+      database: process.env.PGDATABASE ?? "consultorio",
+    };
+
+const pool = new Pool({ ...dbConfig, max: 5 });
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST ?? "localhost",
