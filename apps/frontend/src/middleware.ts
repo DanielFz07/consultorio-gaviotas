@@ -10,6 +10,20 @@ const PUBLIC_PREFIXES = ["/_astro", "/favicon", "/static"];
 // En producción (Railway): http://localhost:3001 (mismo contenedor)
 const INTERNAL_API = process.env.API_URL ?? `http://localhost:${process.env.API_PORT ?? 3001}`;
 
+// Decode JWT payload (middle segment, base64url) without verifying signature.
+// The JWT was issued by the same backend with the same JWT_SECRET, so this is safe.
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = payload + "=".repeat((4 - (payload.length % 4)) % 4);
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+}
+
 export const onRequest = defineMiddleware(async (ctx, next) => {
   const url = new URL(ctx.request.url);
   const path = url.pathname;
@@ -19,10 +33,28 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   if (path.startsWith("/api/")) {
     const target = INTERNAL_API + path + url.search;
     const headers = new Headers(ctx.request.headers);
-    // Eliminar headers que no deben reenviarse
     headers.delete("host");
     headers.delete("connection");
-    // El body solo se reenvía para métodos que lo tengan
+
+    // Set x-user header from the JWT cookie so the backend route handlers
+    // (which read x-user) know who's making the request. The browser may not
+    // send an Authorization header on regular link navigations (e.g. opening
+    // a PDF report in a new tab), so we derive the user from the cookie.
+    if (path !== "/api/auth/login") {
+      const cookieToken = ctx.cookies.get("consultorio-gaviotas_token")?.value;
+      if (cookieToken) {
+        const payload = decodeJwtPayload(cookieToken);
+        if (payload) {
+          headers.set("x-user", JSON.stringify({
+            sub: payload.sub,
+            username: payload.username,
+            rol: payload.rol,
+            nombre: payload.nombre,
+          }));
+        }
+      }
+    }
+
     const hasBody = !["GET", "HEAD"].includes(ctx.request.method);
     const res = await fetch(target, {
       method: ctx.request.method,
@@ -30,7 +62,6 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
       body: hasBody ? await ctx.request.arrayBuffer() : undefined,
     });
     const responseHeaders = new Headers(res.headers);
-    // Eliminar headers que causarían problemas
     responseHeaders.delete("connection");
     responseHeaders.delete("transfer-encoding");
     return new Response(res.body, {
