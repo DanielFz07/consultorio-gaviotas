@@ -1,7 +1,12 @@
 // Helper para resolver la URL del backend.
-// El API siempre escucha en 3001 dentro del contenedor (interno).
+// Server-side: el API siempre escucha en 3001 dentro del contenedor.
 // API_URL env var permite override para setups con API separado.
+// Client-side: URL relativa — el middleware Astro proxy /api/* al backend.
 export function getApiUrl(): string {
+  if (typeof window !== "undefined") {
+    // Browser: ruta relativa. Astro middleware redirige /api/* al backend.
+    return "";
+  }
   return process.env.API_URL ?? `http://localhost:${process.env.API_PORT ?? 3001}`;
 }
 
