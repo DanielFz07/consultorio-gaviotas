@@ -3,7 +3,8 @@
 # Starts API on $API_PORT (internal), Astro frontend on $PORT (public),
 # worker as background. PostgreSQL is provided by Railway.
 
-set -e
+# Don't `set -e` — we want the API/worker to start even if migrations fail.
+# Migrations are retried by the backend on each boot anyway.
 
 if [ -z "$DATABASE_URL" ] && [ -z "$PGHOST" ]; then
   echo "ERROR: DATABASE_URL or PGHOST must be set"
@@ -26,13 +27,13 @@ if [ -n "$DATABASE_URL" ] && [ -z "$PGHOST" ]; then
   export PGUSER PGPASSWORD PGHOST PGPORT PGDATABASE
 fi
 
-# Run migrations + seed
+# Run migrations + seed (best-effort, don't abort if DB is briefly unavailable)
 echo "==> Running migrations..."
 cd /app/backend
-bun run src/db/migrate.ts 2>&1 | tail -3
+bun run src/db/migrate.ts 2>&1 | tail -3 || echo "(migrations failed, continuing)"
 
 echo "==> Running seeds..."
-bun run src/db/seed.ts 2>&1 | tail -3 || true
+bun run src/db/seed.ts 2>&1 | tail -3 || echo "(seeds failed, continuing)"
 
 # Start worker
 echo "==> Starting worker..."

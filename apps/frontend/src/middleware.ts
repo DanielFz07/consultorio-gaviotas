@@ -36,22 +36,15 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
     headers.delete("host");
     headers.delete("connection");
 
-    // Set x-user header from the JWT cookie so the backend route handlers
-    // (which read x-user) know who's making the request. The browser may not
-    // send an Authorization header on regular link navigations (e.g. opening
-    // a PDF report in a new tab), so we derive the user from the cookie.
+    // Forward the JWT from the cookie as Authorization: Bearer so the
+    // backend's onBeforeHandle (which reads `authorization` not `x-user`)
+    // accepts the request. Browsers don't send Authorization on regular
+    // link navigations (e.g. opening a PDF in a new tab), so we synthesize
+    // it from the cookie set at login.
     if (path !== "/api/auth/login") {
       const cookieToken = ctx.cookies.get("consultorio-gaviotas_token")?.value;
-      if (cookieToken) {
-        const payload = decodeJwtPayload(cookieToken);
-        if (payload) {
-          headers.set("x-user", JSON.stringify({
-            sub: payload.sub,
-            username: payload.username,
-            rol: payload.rol,
-            nombre: payload.nombre,
-          }));
-        }
+      if (cookieToken && !headers.get("authorization")) {
+        headers.set("authorization", `Bearer ${cookieToken}`);
       }
     }
 
