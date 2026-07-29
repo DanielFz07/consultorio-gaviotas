@@ -1,70 +1,56 @@
 #!/bin/sh
-# Orquestador de los 3 servicios de Consultorio Las Gaviotas en un solo contenedor.
-# Diseñado para Railway free tier donde solo podés tener 1 servicio.
+# Single-container start for Railway free tier (1 service).
+# Starts API on $API_PORT (internal), Astro frontend on $PORT (public),
+# worker as background. PostgreSQL is provided by Railway.
 
 set -e
 
-# Cargar DATABASE_URL del entorno
-if [ -z "$DATABASE_URL" ]; then
-  echo "ERROR: DATABASE_URL no está definida"
-  echo "Agregá el plugin de PostgreSQL en Railway: railway add --plugin postgresql"
+if [ -z "$DATABASE_URL" ] && [ -z "$PGHOST" ]; then
+  echo "ERROR: DATABASE_URL or PGHOST must be set"
   exit 1
 fi
 
-export DATABASE_URL
-
-# Esperar a que PostgreSQL esté listo (max 60s).
-# Usa psql -c "SELECT 1" contra la URL parseada.
-echo "==> Esperando a que PostgreSQL esté disponible..."
-i=0
-while [ "$i" -lt 60 ]; do
-  if psql "$DATABASE_URL" -c "SELECT 1" >/dev/null 2>&1; then
-    echo "    PostgreSQL listo"
-    break
-  fi
-  i=$((i + 1))
-  sleep 1
-done
-if [ "$i" -eq 60 ]; then
-  echo "ERROR: PostgreSQL no respondió en 60s"
-  exit 1
+# If only DATABASE_URL is provided, parse it and populate PG* vars so the
+# worker (which reads PGHOST/PGUSER/etc.) can connect.
+if [ -n "$DATABASE_URL" ] && [ -z "$PGHOST" ]; then
+  # postgresql://user:pass@host:port/dbname?...
+  RE=$(echo "$DATABASE_URL" | sed -E 's|^postgresql://||; s|^postgres://||')
+  PGUSER=$(echo "$RE" | cut -d: -f1)
+  _PP=$(echo "$RE" | cut -d: -f2 | cut -d@ -f1)
+  PGPASSWORD="$_PP"
+  HOSTPART=$(echo "$RE" | cut -d@ -f2 | cut -d'/' -f1)
+  PGHOST=$(echo "$HOSTPART" | cut -d: -f1)
+  _PORT=$(echo "$HOSTPART" | grep -oE ':[0-9]+$' | tr -d ':')
+  PGPORT="${_PORT:-5432}"
+  PGDATABASE=$(echo "$RE" | cut -d/ -f2 | cut -d'?' -f1)
+  export PGUSER PGPASSWORD PGHOST PGPORT PGDATABASE
 fi
 
-# Arquitectura de puertos dentro del container:
-# - API escucha en 3001 (interno, no expuesto al browser)
-# - Frontend Astro escucha en $PORT (lo que Railway expone al público)
-# - Worker es background sin puerto
-# Así el navegador llega a https://tu-app.up.railway.app/ y aterriza en Astro,
-# que internamente llama al API en http://localhost:3001/api/*
-API_PORT="${API_PORT:-3001}"
-FRONTEND_PORT="${PORT:-${VETSYS_PORT:-8080}}"
+# Run migrations + seed
+echo "==> Running migrations..."
+cd /app/backend
+bun run src/db/migrate.ts 2>&1 | tail -3
 
-echo "==> Iniciando API en puerto ${API_PORT} (interno)..."
-cd /app/api
-export API_PORT
-./start.sh &
-API_PID=$!
+echo "==> Running seeds..."
+bun run src/db/seed.ts 2>&1 | tail -3 || true
 
-echo "==> Iniciando Worker..."
-cd /app/wrk
-./start.sh &
+# Start worker
+echo "==> Starting worker..."
+cd /app/worker
+bun run src/index.ts &
 WORKER_PID=$!
 
-echo "==> Iniciando Frontend en puerto ${FRONTEND_PORT} (público)..."
-cd /app/web
-export PORT="${FRONTEND_PORT}"
-export HOST=0.0.0.0
-# Usamos bun en vez de node: el container base (oven/bun:1.1) trae Node 12
-# que no soporta la sintaxis ES2022 del build de Astro 5. Bun sí.
-if [ -f "./dist/server/entry.mjs" ]; then
-  bun run ./dist/server/entry.mjs &
-elif [ -f "./node_modules/.bin/astro" ]; then
-  bunx astro preview --host 0.0.0.0 --port "${FRONTEND_PORT}" &
-else
-  bun run preview --host 0.0.0.0 --port "${FRONTEND_PORT}" &
-fi
+# Start API on internal port
+echo "==> Starting API on port ${API_PORT:-3001}..."
+cd /app/backend
+API_PORT="${API_PORT:-3001}" HOST=0.0.0.0 bun run src/server.ts &
+API_PID=$!
+
+# Start frontend on public port (use bun — alpine image has no node)
+echo "==> Starting frontend on port ${PORT:-8080}..."
+cd /app/frontend
+HOST=0.0.0.0 PORT="${PORT:-8080}" bun run ./dist/server/entry.mjs &
 FRONTEND_PID=$!
 
-# Esperar a que cualquier proceso termine
-trap "kill $API_PID $WORKER_PID $FRONTEND_PID 2>/dev/null || true" EXIT
+trap "kill $WORKER_PID $API_PID $FRONTEND_PID 2>/dev/null || true" EXIT
 wait

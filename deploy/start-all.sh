@@ -10,8 +10,20 @@ if [ -z "$DATABASE_URL" ] && [ -z "$PGHOST" ]; then
   exit 1
 fi
 
-if [ -n "$DATABASE_URL" ]; then
-  export DATABASE_URL
+# If only DATABASE_URL is provided, parse it and populate PG* vars so the
+# worker (which reads PGHOST/PGUSER/etc.) can connect.
+if [ -n "$DATABASE_URL" ] && [ -z "$PGHOST" ]; then
+  # postgresql://user:pass@host:port/dbname?...
+  RE=$(echo "$DATABASE_URL" | sed -E 's|^postgresql://||; s|^postgres://||')
+  PGUSER=$(echo "$RE" | cut -d: -f1)
+  _PP=$(echo "$RE" | cut -d: -f2 | cut -d@ -f1)
+  PGPASSWORD="$_PP"
+  HOSTPART=$(echo "$RE" | cut -d@ -f2 | cut -d'/' -f1)
+  PGHOST=$(echo "$HOSTPART" | cut -d: -f1)
+  _PORT=$(echo "$HOSTPART" | grep -oE ':[0-9]+$' | tr -d ':')
+  PGPORT="${_PORT:-5432}"
+  PGDATABASE=$(echo "$RE" | cut -d/ -f2 | cut -d'?' -f1)
+  export PGUSER PGPASSWORD PGHOST PGPORT PGDATABASE
 fi
 
 # Run migrations + seed
@@ -34,10 +46,10 @@ cd /app/backend
 API_PORT="${API_PORT:-3001}" HOST=0.0.0.0 bun run src/server.ts &
 API_PID=$!
 
-# Start frontend on public port
+# Start frontend on public port (use bun — alpine image has no node)
 echo "==> Starting frontend on port ${PORT:-8080}..."
 cd /app/frontend
-HOST=0.0.0.0 PORT="${PORT:-8080}" node ./dist/server/entry.mjs &
+HOST=0.0.0.0 PORT="${PORT:-8080}" bun run ./dist/server/entry.mjs &
 FRONTEND_PID=$!
 
 trap "kill $WORKER_PID $API_PID $FRONTEND_PID 2>/dev/null || true" EXIT
