@@ -1,6 +1,7 @@
 FROM oven/bun:1.1-alpine
 
-# Install psql + pg_dump for the start script and backups
+# Install psql + pg_dump (for backups and healthcheck).
+# PDFs are generated in-process by pdfkit (pure JS, no system deps).
 RUN apk add --no-cache postgresql-client bash
 
 WORKDIR /app

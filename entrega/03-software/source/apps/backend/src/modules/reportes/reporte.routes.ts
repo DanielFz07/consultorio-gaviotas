@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+import PDFDocument from "pdfkit";
 import { pool } from "../../db/pool.ts";
 import { getClientInfo, recordAudit } from "../../lib/audit.ts";
 import type { AuthPayload } from "../auth/auth.routes.ts";
@@ -9,48 +10,112 @@ function getUser(headers: Record<string, string | undefined>): AuthPayload | nul
   try { return JSON.parse(raw) as AuthPayload; } catch { return null; }
 }
 
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  }[c]!));
-}
-
 function fmtFecha(d: Date | string): string {
   return new Date(d).toLocaleDateString("es-VE", { year: "numeric", month: "long", day: "numeric" });
 }
 
-function generatePdf(html: string): Promise<Uint8Array> {
-  return new Promise(async (resolve, reject) => {
-    const proc = Bun.spawn({
-      cmd: ["wkhtmltopdf", "-q", "--enable-local-file-access", "--encoding", "UTF-8", "-", "-"],
-      stdin: html,
-      stdout: "pipe",
-      stderr: "pipe",
-    });
-    const stdout = await new Response(proc.stdout).arrayBuffer();
-    await proc.exited;
-    if (proc.exitCode !== 0) {
-      const stderr = await new Response(proc.stderr).text();
-      reject(new Error(`wkhtmltopdf falló: ${stderr}`));
-    } else {
-      resolve(new Uint8Array(stdout));
-    }
-  });
+interface PdfColumn {
+  label: string;
+  width: number; // points, total page width minus margins
 }
 
-function pageShell(title: string, body: string): string {
-  return `<!DOCTYPE html>
-<html lang="es"><head><meta charset="UTF-8"><title>${title}</title>
-<style>
-@page { size: Letter; margin: 2cm; }
-body { font-family: 'DejaVu Sans', sans-serif; color: #111; font-size: 11pt; }
-h1 { color: #0f766e; border-bottom: 2px solid #0f766e; padding-bottom: 0.3em; }
-h2 { color: #0f766e; margin-top: 1.5em; }
-table { width: 100%; border-collapse: collapse; margin-top: 0.5em; }
-th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; font-size: 10pt; }
-th { background: #f0fdfa; color: #0f766e; font-weight: 600; }
-.meta { color: #666; font-size: 9pt; margin-bottom: 1em; }
-</style></head><body>${body}</body></html>`;
+interface PdfRow {
+  [key: string]: string | number | null | undefined;
+}
+
+interface PdfOptions {
+  title: string;
+  meta: string;
+  columns: PdfColumn[];
+  rows: PdfRow[];
+  filename: string;
+}
+
+/**
+ * Generate a PDF report using pdfkit (pure JS, no system deps).
+ * Returns a Uint8Array.
+ */
+function generatePdf(opts: PdfOptions): Promise<Uint8Array> {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: "LETTER", margin: 50 });
+    const chunks: Buffer[] = [];
+    doc.on("data", (chunk: Buffer) => chunks.push(chunk));
+    doc.on("end", () => resolve(new Uint8Array(Buffer.concat(chunks))));
+    doc.on("error", reject);
+
+    const COLORS = {
+      teal: "#0f766e",
+      ink: "#1a1a1a",
+      muted: "#666666",
+      rule: "#cccccc",
+      zebra: "#f7f7f7",
+    };
+
+    // Header
+    doc.fillColor(COLORS.teal).fontSize(20).font("Helvetica-Bold")
+      .text(opts.title, { underline: false });
+    doc.moveDown(0.3);
+    doc.fillColor(COLORS.muted).fontSize(9).font("Helvetica")
+      .text(`Consultorio Las Gaviotas · ${new Date().toLocaleString("es-VE")} · ${opts.meta}`);
+    doc.moveDown(0.5);
+    doc.fillColor(COLORS.ink).fontSize(11).font("Helvetica-Bold")
+      .text(`Total de registros: ${opts.rows.length}`);
+    doc.moveDown(0.5);
+
+    // Table
+    if (opts.rows.length === 0) {
+      doc.fillColor(COLORS.muted).font("Helvetica-Oblique").fontSize(10)
+        .text("Sin resultados");
+    } else {
+      const pageW = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+      const totalW = opts.columns.reduce((acc, c) => acc + c.width, 0);
+      const scale = pageW / totalW;
+      const widths = opts.columns.map((c) => c.width * scale);
+      const rowH = 18;
+      let y = doc.y;
+
+      const drawHeader = () => {
+        doc.fillColor(COLORS.teal).rect(doc.page.margins.left, y - 2, pageW, rowH).fill();
+        let x = doc.page.margins.left;
+        opts.columns.forEach((c, i) => {
+          doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(9);
+          doc.text(c.label, x + 4, y + 4, { width: widths[i] - 8, ellipsis: true, lineBreak: false });
+          x += widths[i];
+        });
+        y += rowH;
+      };
+      drawHeader();
+
+      doc.font("Helvetica").fontSize(9).fillColor(COLORS.ink);
+      opts.rows.forEach((row, rowIdx) => {
+        if (y + rowH > doc.page.height - doc.page.margins.bottom) {
+          doc.addPage();
+          y = doc.page.margins.top;
+          drawHeader();
+          doc.font("Helvetica").fontSize(9).fillColor(COLORS.ink);
+        }
+        if (rowIdx % 2 === 0) {
+          doc.fillColor(COLORS.zebra).rect(doc.page.margins.left, y - 2, pageW, rowH).fill();
+        }
+        doc.fillColor(COLORS.ink);
+        let x = doc.page.margins.left;
+        opts.columns.forEach((c, i) => {
+          const v = row[c.label];
+          const text = v === null || v === undefined ? "—" : String(v);
+          doc.text(text, x + 4, y + 4, { width: widths[i] - 8, ellipsis: true, lineBreak: false });
+          x += widths[i];
+        });
+        y += rowH;
+      });
+
+      // Bottom rule
+      doc.strokeColor(COLORS.rule).lineWidth(0.5)
+        .moveTo(doc.page.margins.left, y)
+        .lineTo(doc.page.margins.left + pageW, y).stroke();
+    }
+
+    doc.end();
+  });
 }
 
 export const reporteRoutes = new Elysia({ prefix: "/api/reportes" })
@@ -82,30 +147,12 @@ export const reporteRoutes = new Elysia({ prefix: "/api/reportes" })
       params,
     );
 
-    const rowsHtml = rows.map((r: any) => `
-      <tr>
-        <td>${new Date(r.fecha_hora).toLocaleDateString("es-VE")}</td>
-        <td>${escapeHtml(r.papellido)} ${escapeHtml(r.pnombre)}<br><small>${escapeHtml(r.cedula)}</small></td>
-        <td>${escapeHtml(r.mnombre ?? "—")}</td>
-        <td>${escapeHtml(r.sintomas)}</td>
-        <td>${escapeHtml(r.diagnostico)}</td>
-      </tr>`).join("");
-
-    const filtros = [
+    const filtrosTxt = [
       desde && `Desde: ${fmtFecha(desde)}`,
       hasta && `Hasta: ${fmtFecha(hasta)}`,
       medicoId && `Médico ID: ${medicoId}`,
       pacienteId && `Paciente ID: ${pacienteId}`,
     ].filter(Boolean).join(" · ") || "Sin filtros";
-
-    const body = `
-      <h1>Reporte de Consultas Médicas</h1>
-      <p class="meta">Consultorio Las Gaviotas · ${new Date().toLocaleString("es-VE")} · ${filtros}</p>
-      <p><strong>Total de consultas:</strong> ${rows.length}</p>
-      <table>
-        <thead><tr><th>Fecha</th><th>Paciente</th><th>Médico</th><th>Síntomas</th><th>Diagnóstico</th></tr></thead>
-        <tbody>${rowsHtml || '<tr><td colspan="5" style="text-align:center;color:#888">Sin resultados</td></tr>'}</tbody>
-      </table>`;
 
     const info = getClientInfo(request);
     await recordAudit(
@@ -114,9 +161,28 @@ export const reporteRoutes = new Elysia({ prefix: "/api/reportes" })
       undefined, { filtros: { desde, hasta, medicoId, pacienteId }, count: rows.length },
     );
 
-    const html = pageShell("Reporte de Consultas", body);
     try {
-      const pdf = await generatePdf(html);
+      const pdf = await generatePdf({
+        title: "Reporte de Consultas Médicas",
+        meta: filtrosTxt,
+        filename: `reporte-consultas-${new Date().toISOString().slice(0, 10)}.pdf`,
+        columns: [
+          { label: "Fecha",       width: 60 },
+          { label: "Paciente",    width: 130 },
+          { label: "Cédula",      width: 60 },
+          { label: "Médico",      width: 90 },
+          { label: "Síntomas",    width: 100 },
+          { label: "Diagnóstico", width: 100 },
+        ],
+        rows: (rows as Array<Record<string, unknown>>).map((r) => ({
+          "Fecha":       new Date(r.fecha_hora as string).toLocaleDateString("es-VE"),
+          "Paciente":    `${r.papellido ?? ""} ${r.pnombre ?? ""}`.trim(),
+          "Cédula":      String(r.cedula ?? ""),
+          "Médico":      (r.mnombre as string) ?? "—",
+          "Síntomas":    (r.sintomas as string) ?? "",
+          "Diagnóstico": (r.diagnostico as string) ?? "",
+        })),
+      });
       return new Response(pdf, {
         headers: {
           "Content-Type": "application/pdf",
@@ -148,24 +214,10 @@ export const reporteRoutes = new Elysia({ prefix: "/api/reportes" })
       params,
     );
 
-    const rowsHtml = rows.map((r: any) => `
-      <tr>
-        <td>${escapeHtml(r.cedula)}</td>
-        <td>${escapeHtml(r.apellido)} ${escapeHtml(r.nombre)}</td>
-        <td>${r.fecha_nacimiento ? new Date(r.fecha_nacimiento).toLocaleDateString("es-VE") : "—"}</td>
-        <td>${escapeHtml(r.telefono ?? "—")}</td>
-        <td>${escapeHtml(r.email ?? "—")}</td>
-        <td>${escapeHtml(r.sexo)}</td>
-        <td>${r.total_consultas}</td>
-      </tr>`).join("");
-
-    const body = `
-      <h1>Listado de Pacientes</h1>
-      <p class="meta">Consultorio Las Gaviotas · ${new Date().toLocaleString("es-VE")} · ${rows.length} pacientes</p>
-      <table>
-        <thead><tr><th>Cédula</th><th>Nombre</th><th>F. Nac.</th><th>Teléfono</th><th>Email</th><th>Sexo</th><th>Consultas</th></tr></thead>
-        <tbody>${rowsHtml || '<tr><td colspan="7" style="text-align:center;color:#888">Sin resultados</td></tr>'}</tbody>
-      </table>`;
+    const filtrosTxt = [
+      q && `Búsqueda: ${q}`,
+      cedula && `Cédula: ${cedula}`,
+    ].filter(Boolean).join(" · ") || "Sin filtros";
 
     const info = getClientInfo(request);
     await recordAudit(
@@ -174,9 +226,30 @@ export const reporteRoutes = new Elysia({ prefix: "/api/reportes" })
       undefined, { filtros: { q, cedula }, count: rows.length },
     );
 
-    const html = pageShell("Listado de Pacientes", body);
     try {
-      const pdf = await generatePdf(html);
+      const pdf = await generatePdf({
+        title: "Listado de Pacientes",
+        meta: `${rows.length} pacientes · ${filtrosTxt}`,
+        filename: `reporte-pacientes-${new Date().toISOString().slice(0, 10)}.pdf`,
+        columns: [
+          { label: "Cédula",     width: 60 },
+          { label: "Nombre",     width: 130 },
+          { label: "F. Nac.",    width: 60 },
+          { label: "Sexo",       width: 35 },
+          { label: "Teléfono",   width: 75 },
+          { label: "Email",      width: 100 },
+          { label: "Consultas",  width: 50 },
+        ],
+        rows: (rows as Array<Record<string, unknown>>).map((r) => ({
+          "Cédula":    String(r.cedula ?? ""),
+          "Nombre":    `${r.apellido ?? ""} ${r.nombre ?? ""}`.trim(),
+          "F. Nac.":   r.fecha_nacimiento ? new Date(r.fecha_nacimiento as string).toLocaleDateString("es-VE") : "—",
+          "Sexo":      String(r.sexo ?? "—"),
+          "Teléfono":  (r.telefono as string) ?? "—",
+          "Email":     (r.email as string) ?? "—",
+          "Consultas": String(r.total_consultas ?? 0),
+        })),
+      });
       return new Response(pdf, {
         headers: {
           "Content-Type": "application/pdf",
@@ -211,23 +284,10 @@ export const reporteRoutes = new Elysia({ prefix: "/api/reportes" })
       params,
     );
 
-    const rowsHtml = rows.map((r: any) => `
-      <tr>
-        <td>${new Date(r.fecha).toLocaleDateString("es-VE")}</td>
-        <td>${r.hora_inicio}</td>
-        <td>${escapeHtml(r.papellido)} ${escapeHtml(r.pnombre)}<br><small>${escapeHtml(r.cedula)}</small></td>
-        <td>${escapeHtml(r.mnombre ?? "—")}</td>
-        <td>${escapeHtml(r.tipo_servicio)}</td>
-        <td>${escapeHtml(r.estado)}</td>
-      </tr>`).join("");
-
-    const body = `
-      <h1>Reporte de Citas</h1>
-      <p class="meta">Consultorio Las Gaviotas · ${new Date().toLocaleString("es-VE")} · ${rows.length} citas</p>
-      <table>
-        <thead><tr><th>Fecha</th><th>Hora</th><th>Paciente</th><th>Médico</th><th>Tipo</th><th>Estado</th></tr></thead>
-        <tbody>${rowsHtml || '<tr><td colspan="6" style="text-align:center;color:#888">Sin resultados</td></tr>'}</tbody>
-      </table>`;
+    const filtrosTxt = [
+      desde && `Desde: ${fmtFecha(desde)}`,
+      hasta && `Hasta: ${fmtFecha(hasta)}`,
+    ].filter(Boolean).join(" · ") || "Sin filtros";
 
     const info = getClientInfo(request);
     await recordAudit(
@@ -236,9 +296,30 @@ export const reporteRoutes = new Elysia({ prefix: "/api/reportes" })
       undefined, { filtros: { desde, hasta }, count: rows.length },
     );
 
-    const html = pageShell("Reporte de Citas", body);
     try {
-      const pdf = await generatePdf(html);
+      const pdf = await generatePdf({
+        title: "Reporte de Citas",
+        meta: `${rows.length} citas · ${filtrosTxt}`,
+        filename: `reporte-citas-${new Date().toISOString().slice(0, 10)}.pdf`,
+        columns: [
+          { label: "Fecha",     width: 60 },
+          { label: "Hora",      width: 40 },
+          { label: "Paciente",  width: 130 },
+          { label: "Cédula",    width: 60 },
+          { label: "Médico",    width: 90 },
+          { label: "Tipo",      width: 50 },
+          { label: "Estado",    width: 50 },
+        ],
+        rows: (rows as Array<Record<string, unknown>>).map((r) => ({
+          "Fecha":    new Date(r.fecha as string).toLocaleDateString("es-VE"),
+          "Hora":     String(r.hora_inicio ?? "").slice(0, 5),
+          "Paciente": `${r.papellido ?? ""} ${r.pnombre ?? ""}`.trim(),
+          "Cédula":   String(r.cedula ?? ""),
+          "Médico":   (r.mnombre as string) ?? "—",
+          "Tipo":     (r.tipo_servicio as string) ?? "",
+          "Estado":   (r.estado as string) ?? "",
+        })),
+      });
       return new Response(pdf, {
         headers: {
           "Content-Type": "application/pdf",
