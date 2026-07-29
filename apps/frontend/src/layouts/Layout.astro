@@ -1,0 +1,283 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+const user = Astro.locals.user;
+const path = new URL(Astro.request.url).pathname;
+const isActive = (href: string) => path === href || path.startsWith(href + "/");
+
+const nav = [
+  { href: "/dashboard", label: "Día", icon: "calendar", roles: ["ADMIN", "MEDICO", "RECEPCION"] },
+  { href: "/consultas", label: "Consultas", icon: "stethoscope", roles: ["ADMIN", "MEDICO"] },
+  { href: "/pacientes", label: "Pacientes", icon: "users", roles: ["ADMIN", "MEDICO", "RECEPCION"] },
+  { href: "/citas", label: "Citas", icon: "calendar-check", roles: ["ADMIN", "MEDICO", "RECEPCION"] },
+  { href: "/inventario", label: "Inventario", icon: "package", roles: ["ADMIN", "MEDICO"] },
+  { href: "/servicios", label: "Servicios", icon: "check-square", roles: ["ADMIN", "MEDICO"] },
+  { href: "/facturas", label: "Facturación", icon: "receipt", roles: ["ADMIN", "RECEPCION"] },
+  { href: "/reportes", label: "Reportes", icon: "chart", roles: ["ADMIN"] },
+  { href: "/auditoria", label: "Auditoría", icon: "shield", roles: ["ADMIN"] },
+  { href: "/mantenimiento", label: "Mantenimiento", icon: "database", roles: ["ADMIN"] },
+  { href: "/usuarios", label: "Usuarios", icon: "user-cog", roles: ["ADMIN"] },
+];
+
+const visible = nav.filter((it) => !user || it.roles.includes(user.rol));
+
+const Icon = (name: string) => {
+  const paths: Record<string, string> = {
+    calendar: '<rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 9h18M8 3v4M16 3v4"/>',
+    "calendar-check": '<rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 9h18M8 3v4M16 3v4"/><polyline points="9 16 11 18 15 14"/>',
+    stethoscope: '<path d="M5 3v6a4 4 0 0 0 4 4 4 4 0 0 0 4-4V3"/><path d="M5 3h2M13 3h2"/><path d="M9 13v3a3 3 0 0 0 6 0v-1"/><circle cx="18" cy="14" r="2"/>',
+    users: '<circle cx="9" cy="8" r="3.5"/><path d="M3 20v-1.5a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4V20"/><circle cx="17" cy="9" r="2.5"/><path d="M21 19v-1a3 3 0 0 0-3-3"/>',
+    package: '<path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><path d="M12 22.08V12"/>',
+    "check-square": '<polyline points="9 11 12 14 22 4"/><rect x="3" y="3" width="18" height="18" rx="1"/>',
+    receipt: '<path d="M5 3v18l2-1 2 1 2-1 2 1 2-1 2 1 2-1V3"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+    shield: '<path d="M12 3 4 6v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V6l-8-3z"/><polyline points="9 12 11 14 15 10"/>',
+    database: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>',
+    chart: '<path d="M3 3v18h18"/><rect x="7" y="13" width="3" height="5"/><rect x="12" y="9" width="3" height="9"/><rect x="17" y="5" width="3" height="13"/>',
+    "user-cog": '<circle cx="9" cy="8" r="3.5"/><path d="M3 20v-1.5a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4V20"/><circle cx="18" cy="15" r="1.8"/><path d="M18.5 11.5v1M16 13.5l-.7.7M20 13.5l.7.7M18.5 17.5v1M16 16.5l-.7-.7M20 16.5l.7-.7M21 15h-1M21 14h0"/>',
+  };
+  return paths[name] ?? paths.calendar;
+};
+
+const fmtFechaHoy = () => {
+  const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  const d = new Date();
+  return `${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
+};
+
+const initials = (name: string) =>
+  name.split(" ").slice(0, 2).map((s) => s[0] ?? "").join("").toUpperCase() || "U";
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <title>{title} · Consultorio Las Gaviotas</title>
+    <script is:inline>
+      (function() {
+        try {
+          const saved = localStorage.getItem("clg.theme");
+          const sysDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          const theme = saved || (sysDark ? "dark" : "light");
+          if (theme === "dark") document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="toastContainer"></div>
+    <script is:inline>
+      (function() {
+        const container = document.getElementById("toastContainer");
+        const ICONS = {
+          success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M20 6 9 17l-5-5"/></svg>',
+          error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>',
+          warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4M12 17h.01"/></svg>',
+          info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+        };
+        function make(opts) {
+          const t = document.createElement("div");
+          t.className = "toast-premium " + (opts.type || "info");
+          const title = opts.title || (opts.type === "error" ? "Error" : opts.type === "success" ? "Listo" : "Aviso");
+          const details = opts.details ? `<details class="toast-premium-details"><summary>Detalle</summary><pre>${String(opts.details).replace(/</g, "&lt;")}</pre></details>` : "";
+          t.innerHTML = `<div class="toast-premium-icon">${ICONS[opts.type || "info"]}</div><div class="toast-premium-content"><div class="toast-premium-title">${title}</div><div class="toast-premium-msg">${opts.message || ""}</div>${details}</div><button class="toast-premium-close" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>`;
+          const close = () => { t.classList.add("leaving"); setTimeout(() => t.remove(), 200); };
+          t.querySelector(".toast-premium-close").addEventListener("click", close);
+          const dur = opts.duration !== undefined ? opts.duration : (opts.type === "success" ? 4000 : opts.type === "info" ? 4000 : 0);
+          if (dur > 0) setTimeout(close, dur);
+          return { el: t, close };
+        }
+        window["consultorio-gaviotasToast"] = {
+          show(opts) { const t = make(opts); container.appendChild(t.el); return t; },
+          success(msg, opts) { return this.show({ type: "success", message: msg, ...(opts || {}) }); },
+          error(msg, details, opts) { return this.show({ type: "error", message: msg, details, ...(opts || {}) }); },
+          warning(msg, opts) { return this.show({ type: "warning", message: msg, ...(opts || {}) }); },
+          info(msg, opts) { return this.show({ type: "info", message: msg, ...(opts || {}) }); },
+          async fromResponse(res, fallback) {
+            let body = null;
+            try { body = await res.json(); } catch {}
+            const msg = (body && (body.message || body.code)) || fallback || `Error ${res.status}`;
+            const details = res.headers.get("content-type")?.includes("json") ? JSON.stringify({ status: res.status, statusText: res.statusText, body, url: res.url }, null, 2) : res.statusText;
+            this.error(msg, details);
+            return body;
+          },
+        };
+      })();
+    </script>
+    {user ? (
+      <div class="min-h-screen flex flex-col" style="background: var(--color-cream);">
+        <!-- MASTHEAD — always the darkest navy, the brass plate band. Text colors are hardcoded to cream so they stay readable when --color-cream swaps to dark in dark mode. -->
+        <header style="background: #040b18; color: #f5f1e8; border-bottom: 1px solid var(--color-gold);">
+          <div class="px-8 h-[72px] flex items-center justify-between">
+            <a href="/dashboard" class="flex items-center gap-4 group">
+              <div class="w-10 h-10 rounded-md grid place-items-center" style="background: var(--color-gold); color: var(--color-navy);">
+                <span class="font-display text-base font-semibold tracking-tight">CLG</span>
+              </div>
+              <div class="leading-tight">
+                <div class="font-display text-lg font-medium tracking-tight" style="color:#f5f1e8">Consultorio Las Gaviotas</div>
+                <div class="text-[10px] uppercase tracking-[0.18em]" style="color: var(--color-gold);">Sistema de gestión médica · Barcelona, Anzoátegui</div>
+              </div>
+            </a>
+
+            <div class="flex items-center gap-6">
+              <div class="hidden md:flex flex-col items-end leading-tight">
+                <span class="text-[10px] uppercase tracking-[0.18em]" style="color: var(--color-gold);">Hoy</span>
+                <span class="font-mono text-xs" style="color: #f5f1e8;">{fmtFechaHoy()}</span>
+              </div>
+              <div class="h-8 w-px" style="background: rgba(245, 241, 232, 0.15);"></div>
+              <button id="lampToggle" class="lamp-toggle" aria-label="Cambiar entre día y noche" title="Día / Noche">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M9 18h6" />
+                  <path d="M10 22h4" />
+                  <path d="M12 2a7 7 0 0 0-4 12.7c.5.4.8 1 .8 1.6V18h6.4v-1.7c0-.6.3-1.2.8-1.6A7 7 0 0 0 12 2Z" />
+                </svg>
+              </button>
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full grid place-items-center font-display text-sm font-medium" style="background: var(--color-gold); color: var(--color-navy);">{initials(user.nombre)}</div>
+                <div class="hidden sm:block leading-tight">
+                  <div class="text-sm font-medium" style="color: #f5f1e8;">{user.nombre}</div>
+                  <div class="text-[10px] uppercase tracking-[0.18em]" style="color: var(--color-gold);">{user.rol}</div>
+                </div>
+                <a href="/logout" class="ml-2 text-xs hover:underline" style="color: var(--color-gold);">Salir →</a>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- NAV STRIP — cream band, single row -->
+        <nav style="background: var(--color-cream); border-bottom: 1px solid var(--color-rule);">
+          <div class="px-8 h-14 flex items-center gap-1 overflow-x-auto">
+            {visible.map((it) => {
+              const active = isActive(it.href);
+              return (
+                <a
+                  href={it.href}
+                  class={`relative flex items-center gap-2 px-4 h-14 text-[13px] font-medium whitespace-nowrap transition-colors ${
+                    active
+                      ? "text-navy"
+                      : "text-ink-2 hover:text-navy"
+                  }`}
+                  style={active ? "color: var(--color-navy);" : "color: var(--color-ink-2);"}
+                >
+                  <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" set:html={Icon(it.icon)} />
+                  <span>{it.label}</span>
+                  {active && (
+                    <span class="absolute left-2 right-2 bottom-0 h-[2px]" style="background: var(--color-gold);"></span>
+                  )}
+                </a>
+              );
+            })}
+          </div>
+        </nav>
+
+        <!-- SHEET BODY -->
+        <main class="flex-1 px-8 py-10 max-w-[1280px] w-full mx-auto" style="animation: sheetIn 320ms ease-out;">
+          <slot />
+        </main>
+
+        <!-- FOOTER -->
+        <footer style="background: var(--color-cream); border-top: 1px solid var(--color-gold);">
+          <div class="px-8 h-8 flex items-center justify-between text-[11px] uppercase tracking-[0.18em]" style="color: var(--color-ink-2);">
+            <span class="font-display tracking-[0.18em]">Consultorio Las Gaviotas</span>
+            <span class="font-mono">v1.0 · 2026</span>
+          </div>
+        </footer>
+      </div>
+    ) : (
+      <slot />
+    )}
+
+    <style is:global>
+      #toastContainer {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: none;
+      }
+      @keyframes sheetIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes toastIn {
+        from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .toast-premium {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 16px;
+        background: var(--color-surface);
+        border: 1px solid var(--color-rule);
+        border-left: 2px solid var(--color-gold);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-elevation);
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        font-size: 14px;
+        min-width: 320px;
+        max-width: 420px;
+        pointer-events: auto;
+        animation: toastIn 200ms ease-out;
+      }
+      .toast-premium.success { border-left-color: var(--color-success); }
+      .toast-premium.error { border-left-color: var(--color-danger); }
+      .toast-premium.warning { border-left-color: var(--color-warning); }
+      .toast-premium.info { border-left-color: var(--color-info); }
+      .toast-premium-icon { color: var(--color-gold); flex-shrink: 0; padding-top: 2px; }
+      .toast-premium.success .toast-premium-icon { color: var(--color-success); }
+      .toast-premium.error .toast-premium-icon { color: var(--color-danger); }
+      .toast-premium.warning .toast-premium-icon { color: var(--color-warning); }
+      .toast-premium-content { flex: 1; min-width: 0; }
+      .toast-premium-title { font-weight: 600; color: var(--color-navy); margin-bottom: 2px; }
+      .toast-premium-msg { color: var(--color-ink); }
+      .toast-premium-close {
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        color: var(--color-ink-2);
+        padding: 4px;
+      }
+      .toast-premium.leaving { opacity: 0; transform: translateY(-4px); transition: all 200ms ease-out; }
+      .toast-premium-details { margin-top: 6px; }
+      .toast-premium-details summary { font-size: 11px; color: var(--color-ink-2); cursor: pointer; text-transform: uppercase; letter-spacing: 0.06em; }
+      .toast-premium-details pre { font-family: var(--font-mono); font-size: 11px; background: var(--color-cream); padding: 8px; border-radius: 4px; margin-top: 4px; overflow-x: auto; max-height: 160px; }
+    </style>
+    <script is:inline>
+      (function() {
+        const bind = () => {
+          const btn = document.getElementById("lampToggle");
+          if (!btn || btn.dataset.bound) return;
+          btn.dataset.bound = "1";
+          const set = (next) => {
+            document.documentElement.classList.toggle("dark", next === "dark");
+            try { localStorage.setItem("clg.theme", next); } catch (e) {}
+            btn.setAttribute("aria-label", next === "dark" ? "Cambiar a modo día" : "Cambiar a modo noche");
+            btn.setAttribute("title", next === "dark" ? "Modo día" : "Modo noche");
+          };
+          btn.addEventListener("click", () => {
+            const isDark = document.documentElement.classList.contains("dark");
+            set(isDark ? "light" : "dark");
+          });
+          set(document.documentElement.classList.contains("dark") ? "dark" : "light");
+        };
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", bind);
+        } else {
+          bind();
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,84 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { api, isError, getApiUrl } from "../../lib/api";
+
+const token = Astro.cookies.get("consultorio-gaviotas_token")?.value ?? "";
+const API_URL = getApiUrl();
+
+let error: string | null = null;
+if (Astro.request.method === "POST") {
+  const f = await Astro.request.formData();
+  const body = {
+    sku: f.get("sku")?.toString() || null,
+    nombre: f.get("nombre")?.toString() ?? "",
+    descripcion: f.get("descripcion")?.toString() || null,
+    unidad: f.get("unidad")?.toString() || "unidad",
+    precioVenta: Number(f.get("precioVenta") ?? 0),
+    stockActual: Number(f.get("stockActual") ?? 0),
+    stockMinimo: Number(f.get("stockMinimo") ?? 0),
+  };
+  const res = await fetch(`${API_URL}/api/productos`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+  if (res.ok) {
+    const data = (await res.json()) as { id: number };
+    return Astro.redirect(`/inventario/${data.id}`);
+  }
+  const errData = (await res.json().catch(() => ({ message: "Error" }))) as { message: string };
+  error = errData.message ?? "Error al crear";
+}
+---
+<Layout title="Nuevo producto">
+  <a href="/inventario" class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink mb-4 transition-colors">
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    Volver a inventario
+  </a>
+
+  <div class="mb-6">
+    <h1 class="font-display text-3xl font-bold text-ink">Nuevo producto</h1>
+    <p class="text-muted mt-1">Agrega un producto al catálogo de inventario.</p>
+  </div>
+
+  {error && <div class="mb-4 p-3.5 rounded-xl bg-danger-soft border border-danger/20 text-danger text-sm">{error}</div>}
+
+  <form method="POST" class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] p-8 max-w-2xl space-y-4">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="sku">SKU</label>
+        <input id="sku" name="sku" class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all font-mono" placeholder="MED-XXX-001" />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="unidad">Unidad</label>
+        <input id="unidad" name="unidad" value="unidad" class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" placeholder="tableta, frasco..." />
+      </div>
+    </div>
+    <div>
+      <label class="block text-sm font-semibold text-ink mb-1.5" for="nombre">Nombre <span class="text-danger">*</span></label>
+      <input id="nombre" name="nombre" required class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" placeholder="Antibiótico X 250mg" />
+    </div>
+    <div>
+      <label class="block text-sm font-semibold text-ink mb-1.5" for="descripcion">Descripción</label>
+      <textarea id="descripcion" name="descripcion" rows="2" class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all resize-none"></textarea>
+    </div>
+    <div class="grid grid-cols-3 gap-4">
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="precioVenta">Precio venta <span class="text-danger">*</span></label>
+        <input id="precioVenta" name="precioVenta" type="number" step="0.01" min="0" required class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all font-mono" />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="stockActual">Stock inicial</label>
+        <input id="stockActual" name="stockActual" type="number" min="0" value="0" class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all font-mono" />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="stockMinimo">Stock mínimo</label>
+        <input id="stockMinimo" name="stockMinimo" type="number" min="0" value="0" class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all font-mono" />
+      </div>
+    </div>
+    <div class="flex items-center gap-3 pt-2">
+      <button type="submit" class="btn btn-primary">Guardar producto</button>
+      <a href="/inventario" class="btn btn-ghost">Cancelar</a>
+    </div>
+  </form>
+</Layout>

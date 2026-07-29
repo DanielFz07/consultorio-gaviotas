@@ -1,0 +1,25 @@
+---
+import { getApiUrl } from "../lib/api";
+
+let ok = false;
+let db = false;
+try {
+  const r = await fetch(`${getApiUrl()}/api/health`);
+  const data = await r.json() as { ok: boolean; db: boolean };
+  ok = data.ok;
+  db = data.db;
+} catch {
+  ok = false;
+}
+
+if (!ok) {
+  return new Response(JSON.stringify({ ok: false, db }), {
+    status: 503,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+return new Response(JSON.stringify({ ok: true, db }), {
+  status: 200,
+  headers: { "Content-Type": "application/json" },
+});
+---

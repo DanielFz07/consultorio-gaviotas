@@ -1,0 +1,91 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-consultorio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-consultorio}
+      POSTGRES_DB: ${POSTGRES_DB:-consultorio}
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ../db/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U consultorio"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    image: oven/bun:alpine
+    working_dir: /app
+    restart: unless-stopped
+    command: sh -c "apk add --no-cache postgresql-client >/dev/null 2>&1; bun install --production && bun run src/db/migrate.ts && bun run src/db/seed.ts && bun run src/server.ts"
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: ${POSTGRES_USER:-consultorio}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-consultorio}
+      PGDATABASE: ${POSTGRES_DB:-consultorio}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-prod}
+      UPLOAD_DIR: /data/uploads
+      TAX_RATE: ${TAX_RATE:-0.16}
+      MIGRATIONS_DIR: /db/migrations
+      SEED_DIR: /db/seeds/001_seed_basico.sql
+    volumes:
+      - ../apps/backend:/app
+      - ../db:/db
+      - uploads:/data/uploads
+    ports:
+      - "3001:3001"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ../apps/frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      API_URL: http://api:3001
+      HOST: 0.0.0.0
+      PORT: 4321
+      NODE_ENV: production
+    ports:
+      - "4321:4321"
+    depends_on:
+      - api
+
+  worker:
+    image: oven/bun:alpine
+    working_dir: /app
+    restart: unless-stopped
+    command: sh -c "bun install --production && bun run src/index.ts"
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: ${POSTGRES_USER:-consultorio}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-consultorio}
+      PGDATABASE: ${POSTGRES_DB:-consultorio}
+      SMTP_HOST: ${SMTP_HOST:-mailhog}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_FROM: ${SMTP_FROM:-Consultorio Las Gaviotas <no-reply@consultorio.local>}
+      WORKER_INTERVAL_MS: ${WORKER_INTERVAL_MS:-60000}
+    volumes:
+      - ../apps/worker:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  mailhog:
+    image: mailhog/mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  dbdata:
+  uploads:

@@ -1,0 +1,93 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { api, isError } from "../../lib/api";
+
+const bajo = Astro.url.searchParams.get("bajoStock") === "true";
+const r = await api.get<Array<{ id: number; nombre: string; sku: string; stock_actual: number; stock_minimo: number; precio_venta: string; unidad: string; activo: boolean }>>(
+  Astro, `/api/productos${bajo ? "?bajoStock=true" : ""}`
+);
+const productos = r.ok && !isError(r.data) ? r.data : [];
+const esAdmin = Astro.locals.user?.rol === "ADMIN";
+const esCritico = (p: { stock_actual: number; stock_minimo: number }) => p.stock_actual <= p.stock_minimo;
+---
+<Layout title="Inventario">
+  <div class="mb-6 flex items-end justify-between flex-wrap gap-4">
+    <div>
+      <h1 class="font-display text-3xl font-bold text-ink">Inventario</h1>
+      <p class="text-muted mt-1">Stock de medicamentos y productos. Se descuenta en tiempo real con cada prescripción.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1 bg-line-soft rounded-xl p-1">
+        <a href="/inventario" class={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${!bajo ? "bg-white text-ink shadow-sm" : "text-muted hover:text-ink"}`}>Todos</a>
+        <a href="/inventario?bajoStock=true" class={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${bajo ? "bg-white text-warning shadow-sm" : "text-muted hover:text-ink"}`}>Stock crítico</a>
+      </div>
+      {esAdmin && (
+        <a href="/inventario/nuevo" class="btn btn-primary">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo producto
+        </a>
+      )}
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] overflow-hidden">
+    {productos.length === 0 ? (
+      <div class="px-6 py-20 text-center">
+        <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-warning-soft to-accent-50 grid place-items-center mb-4">
+          <svg class="w-10 h-10 text-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg>
+        </div>
+        <p class="font-display text-xl font-semibold text-ink">{bajo ? "Sin alertas" : "Inventario vacío"}</p>
+        <p class="text-sm text-muted mt-1.5">{bajo ? "Ningún producto está por debajo del mínimo." : "Aún no hay productos en el catálogo."}</p>
+        {esAdmin && !bajo && (
+          <a href="/inventario/nuevo" class="btn btn-primary">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Crear primer producto
+          </a>
+        )}
+      </div>
+    ) : (
+      <table class="w-full">
+        <thead class="bg-line-soft/50 border-b border-line">
+          <tr class="text-left text-xs text-muted uppercase tracking-wider">
+            <th class="px-6 py-3 font-semibold">SKU</th>
+            <th class="px-6 py-3 font-semibold">Producto</th>
+            <th class="px-6 py-3 font-semibold text-right">Stock</th>
+            <th class="px-6 py-3 font-semibold text-right">Mínimo</th>
+            <th class="px-6 py-3 font-semibold text-right">Precio</th>
+            <th class="px-6 py-3 font-semibold">Unidad</th>
+            {esAdmin && <th class="px-6 py-3 font-semibold text-right">Acción</th>}
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-line">
+          {productos.map((p) => (
+            <tr class="hover:bg-line-soft/30 transition-colors">
+              <td class="px-6 py-4 text-sm text-muted tabular-nums">{p.sku ?? "—"}</td>
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  {esCritico(p) && (
+                      <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-warning-soft text-warning">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+                      </span>
+                    )}
+                    <a href={`/inventario/${p.id}`} class="font-medium text-ink hover:text-brand-700 transition-colors">{p.nombre}</a>
+                  </div>
+                </td>
+                <td class={`px-6 py-4 text-right tabular-nums font-semibold ${esCritico(p) ? "text-warning" : "text-ink"}`}>
+                  {p.stock_actual}
+                </td>
+                <td class="px-6 py-4 text-right text-muted tabular-nums">{p.stock_minimo}</td>
+                <td class="px-6 py-4 text-right text-ink tabular-nums">${Number(p.precio_venta).toFixed(2)}</td>
+                <td class="px-6 py-4 text-muted">{p.unidad}</td>
+                {esAdmin && (
+                  <td class="px-6 py-4 text-right">
+                    <a href={`/inventario/${p.id}`} class="text-sm font-medium text-brand-600 hover:text-brand-700" style="color:#1a2c54">Editar</a>
+                  </td>
+                )}
+              </tr>
+            ))}
+        </tbody>
+        </tbody>
+      </table>
+    )}
+  </div>
+</Layout>

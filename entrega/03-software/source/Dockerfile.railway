@@ -1,0 +1,74 @@
+# Dockerfile raíz para Railway
+# Este Dockerfile único levanta los 3 servicios del monorepo de Consultorio Las Gaviotas.
+# Útil para deploys de demo donde la simplicidad importa más que la escalabilidad.
+
+# Stage base: Bun + Node + tooling común
+FROM oven/bun:1.1 AS base
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client tini ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+ENV NODE_ENV=production
+
+# Stage API: backend con Bun
+FROM base AS api-build
+WORKDIR /app/api
+COPY apps/backend/package.json ./
+RUN bun install --production
+COPY apps/backend/src ./src
+COPY apps/backend/start.sh ./
+RUN chmod +x ./start.sh
+ENV MIGRATIONS_DIR=/app/db/migrations \
+    SEED_DIR=/app/db/seeds/001_seed_basico.sql
+
+# Stage Frontend: Astro build
+# Astro requiere Node >=18.20.8. Usamos node:22-alpine solo para el build.
+FROM node:22-alpine AS frontend-build
+WORKDIR /app/web
+COPY apps/frontend/package.json ./
+RUN npm install --omit=dev
+COPY apps/frontend/src ./src
+COPY apps/frontend/astro.config.mjs ./
+COPY apps/frontend/tsconfig.json ./
+RUN npx astro build
+ENV PORT=4321 \
+    HOST=0.0.0.0 \
+    NODE_ENV=production
+
+# Stage Worker: cron SMTP
+FROM base AS worker-build
+WORKDIR /app/wrk
+COPY apps/worker/package.json ./
+RUN bun install --production
+COPY apps/worker/src ./src
+COPY apps/worker/start.sh ./
+RUN chmod +x ./start.sh
+ENV WORKER_INTERVAL_MS=60000
+
+# Stage final: combinar todo en una sola imagen.
+# Necesita node (para Astro SSR) y bash (para algunos start.sh).
+FROM oven/bun:1.1 AS final
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client tini nodejs \
+ && rm -rf /var/lib/apt/lists/*
+
+# Copiar los 3 stages
+COPY --from=api-build /app/api /app/api
+COPY --from=frontend-build /app/web /app/web
+COPY --from=worker-build /app/wrk /app/wrk
+
+# Volumen compartido para uploads
+RUN mkdir -p /data/uploads
+
+# Migraciones y seeds
+COPY db/ /app/db/
+
+# Script orquestador
+COPY deploy/start-all.sh /start.sh
+RUN chmod +x /start.sh
+
+EXPOSE 3001 4321
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["/start.sh"]

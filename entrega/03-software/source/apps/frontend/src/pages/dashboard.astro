@@ -1,0 +1,212 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { api, isError } from "../lib/api";
+
+const user = Astro.locals.user!;
+const hoy = new Date().toISOString().slice(0, 10);
+const fechaBonita = new Date().toLocaleDateString("es-VE", { weekday: "long", day: "numeric", month: "long" });
+const hora = new Date().getHours();
+const saludo = hora < 12 ? "Buenos días" : hora < 19 ? "Buenas tardes" : "Buenas noches";
+
+const rCitas = await api.get<Array<{ id: number; paciente_nombre: string; paciente_apellido: string; paciente_cedula: string; hora_inicio: string; hora_fin: string; tipo_servicio: string; motivo: string | null; estado: string }>>(
+  Astro, `/api/citas?fecha=${hoy}`
+);
+const citas = rCitas.ok && !isError(rCitas.data) ? rCitas.data : [];
+const citasPendientes = citas.filter((c) => c.estado !== "ATENDIDA" && c.estado !== "CANCELADA");
+
+const rFact = await api.get<Array<{ id: number; numero: string; paciente_apellido: string; total: string; estado: string }>>(
+  Astro, `/api/facturas?fecha=${hoy}`
+);
+const facturas = rFact.ok && !isError(rFact.data) ? rFact.data : [];
+const totalFacturado = facturas.reduce((acc, f) => acc + Number(f.total), 0);
+const totalCobrado = facturas.filter((f) => f.estado === "PAGADA").reduce((acc, f) => acc + Number(f.total), 0);
+
+const rProd = await api.get<Array<{ id: number; nombre: string; stock_actual: number; stock_minimo: number; unidad: string }>>(
+  Astro, "/api/productos?bajoStock=true"
+);
+const stockBajo = rProd.ok && !isError(rProd.data) ? rProd.data : [];
+
+const fmtHora = (h: string) => h.slice(0, 5);
+const fmtMoney = (n: number) => `$${n.toFixed(2)}`;
+
+const estadoLabel: Record<string, string> = {
+  PROGRAMADA: "Programada",
+  CONFIRMADA: "Confirmada",
+  EN_CURSO: "En curso",
+  ATENDIDA: "Atendida",
+  CANCELADA: "Cancelada",
+  NO_ASISTIO: "No asistió",
+};
+---
+<Layout title="Hoy">
+  <!-- Page masthead -->
+  <header class="mb-10">
+    <div class="eyebrow mb-3">Hoy · {fechaBonita}</div>
+    <h1 class="display text-4xl lg:text-5xl font-medium leading-[1.1] mb-2">{saludo}, {user.nombre.split(" ")[0]}.</h1>
+    <p class="text-base" style="color: var(--color-ink-2);">
+      {citasPendientes.length === 0
+        ? "No quedan citas pendientes para hoy. Buen momento para revisar el inventario."
+        : `Tienes ${citasPendientes.length} cita${citasPendientes.length === 1 ? "" : "s"} por atender hoy.`
+      }
+    </p>
+  </header>
+
+  <!-- Stats -->
+  <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+    <div class="stat">
+      <div class="stat-label">Citas hoy</div>
+      <div class="stat-value">{String(citas.length).padStart(2, "0")}</div>
+      <div class="stat-delta">{citasPendientes.length} pendientes</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Facturas emitidas</div>
+      <div class="stat-value">{String(facturas.length).padStart(2, "0")}</div>
+      <div class="stat-delta">{facturas.filter((f) => f.estado === "PAGADA").length} cobradas</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Ingresos del día</div>
+      <div class="stat-value" style="font-size: 28px;">{fmtMoney(totalFacturado)}</div>
+      <div class="stat-delta">{fmtMoney(totalCobrado)} cobrado</div>
+    </div>
+    <div class="stat" style={stockBajo.length > 0 ? "border-left-color: var(--color-coral);" : ""}>
+      <div class="stat-label" style={stockBajo.length > 0 ? "color: var(--color-coral);" : ""}>Stock crítico</div>
+      <div class="stat-value">{String(stockBajo.length).padStart(2, "0")}</div>
+      <div class="stat-delta" style={stockBajo.length > 0 ? "color: var(--color-coral);" : ""}>
+        {stockBajo.length > 0 ? "requiere reposición" : "todo en orden"}
+      </div>
+    </div>
+  </section>
+
+  <!-- Agenda + Facturación -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- AGENDA -->
+    <div class="lg:col-span-2">
+      <div class="flex items-baseline justify-between mb-5">
+        <div>
+          <div class="eyebrow mb-1">Agenda</div>
+          <h2 class="font-display text-2xl font-medium">Citas de hoy</h2>
+        </div>
+        <a href="/citas" class="text-sm font-medium" style="color: var(--color-gold);">Ver agenda completa →</a>
+      </div>
+
+      <div class="card" style="padding: 0; overflow: hidden;">
+        {citas.length === 0 ? (
+          <div class="px-8 py-16 text-center">
+            <p class="font-display text-xl italic mb-2" style="color: var(--color-navy);">Un día tranquilo.</p>
+            <p class="text-sm" style="color: var(--color-ink-2);">No hay citas programadas para hoy.</p>
+            <a href="/citas/nueva" class="btn btn-primary mt-6">
+              Agendar primera cita
+            </a>
+          </div>
+        ) : (
+          <table class="table-premium">
+            <thead>
+              <tr>
+                <th style="width: 80px;">Hora</th>
+                <th>Paciente</th>
+                <th>Servicio</th>
+                <th>Estado</th>
+                <th style="text-align: right;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {citas.slice(0, 8).map((c) => (
+                <tr>
+                  <td class="col-mono" style="color: var(--color-navy);">{fmtHora(c.hora_inicio)}</td>
+                  <td>
+                    <div style="font-weight: 500;">{c.paciente_apellido}, {c.paciente_nombre}</div>
+                    <div class="col-mono" style="font-size: 11px; color: var(--color-ink-2);">{c.paciente_cedula}</div>
+                  </td>
+                  <td style="color: var(--color-ink-2);">{c.tipo_servicio}</td>
+                  <td>
+                    <span class={`badge ${
+                      c.estado === "ATENDIDA" ? "badge-success" :
+                      c.estado === "CANCELADA" ? "badge-danger" :
+                      c.estado === "EN_CURSO" ? "badge-warning" :
+                      c.estado === "NO_ASISTIO" ? "badge-danger" :
+                      "badge-navy"
+                    }`}>{estadoLabel[c.estado] ?? c.estado}</span>
+                  </td>
+                  <td style="text-align: right;">
+                    {(c.estado === "PROGRAMADA" || c.estado === "CONFIRMADA") && (
+                      <a href={`/consultas/${c.id}`} class="text-xs font-semibold" style="color: var(--color-gold);">
+                        Atender →
+                      </a>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA: Facturación + Stock + Acciones -->
+    <aside class="space-y-8">
+      <!-- Acciones rápidas -->
+      <div>
+        <div class="eyebrow mb-3">Acciones</div>
+        <div class="space-y-2">
+          <a href="/citas/nueva" class="btn btn-primary w-full justify-center">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Agendar cita
+          </a>
+          <a href="/pacientes/nuevo" class="btn btn-outline-navy w-full justify-center">
+            Registrar paciente
+          </a>
+          {user.rol !== "RECEPCION" && (
+            <a href="/reportes" class="btn btn-ghost w-full justify-center">
+              Generar reporte
+            </a>
+          )}
+        </div>
+      </div>
+
+      <!-- Facturación -->
+      <div>
+        <div class="eyebrow mb-3">Facturación del día</div>
+        <div class="card" style="padding: 0; overflow: hidden;">
+          {facturas.length === 0 ? (
+            <div class="px-6 py-10 text-center text-sm" style="color: var(--color-ink-2);">
+              Sin movimientos hoy.
+            </div>
+          ) : (
+            <ul class="divide-y" style="border-color: var(--color-rule);">
+              {facturas.slice(0, 5).map((f) => (
+                <li class="px-5 py-3">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="col-mono" style="font-size: 13px; color: var(--color-navy);">{f.numero}</span>
+                    <span class="font-display text-base font-medium col-mono">{fmtMoney(Number(f.total))}</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs" style="color: var(--color-ink-2);">{f.paciente_apellido}</span>
+                    <span class={`badge ${
+                      f.estado === "PAGADA" ? "badge-success" :
+                      f.estado === "ANULADA" ? "badge-danger" :
+                      "badge-warning"
+                    }`} style="font-size: 10px;">{f.estado}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      <!-- Stock -->
+      {stockBajo.length > 0 && (
+        <div class="card" style="border-left: 2px solid var(--color-coral);">
+          <div class="eyebrow mb-2" style="color: var(--color-coral);">Atención requerida</div>
+          <h3 class="font-display text-lg font-medium mb-2">Stock bajo</h3>
+          <p class="text-sm mb-4" style="color: var(--color-ink-2);">
+            {stockBajo.length} producto{stockBajo.length === 1 ? "" : "s"} necesita{stockBajo.length === 1 ? "" : "n"} reposición antes del cierre.
+          </p>
+          <a href="/inventario?bajoStock=true" class="text-xs font-semibold" style="color: var(--color-coral);">
+            Revisar inventario →
+          </a>
+        </div>
+      )}
+    </aside>
+  </section>
+</Layout>

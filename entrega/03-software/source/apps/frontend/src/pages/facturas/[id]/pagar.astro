@@ -1,0 +1,12 @@
+---
+import { getApiUrl } from "../../../lib/api";
+const { id } = Astro.params;
+await fetch(`${getApiUrl()}/api/facturas/${id}/pagar`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${Astro.cookies.get("consultorio-gaviotas_token")?.value}`,
+  },
+});
+return Astro.redirect(`/facturas/${id}`);
+---

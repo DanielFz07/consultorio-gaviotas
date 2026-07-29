@@ -1,0 +1,130 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { api, isError } from "../../lib/api";
+
+const { id } = Astro.params;
+const r = await api.get(Astro, "/api/facturas/" + id);
+const f = r.ok && !isError(r.data) ? r.data : null;
+const fmt = (n) => "$" + Number(n).toFixed(2);
+---
+<Layout title={f ? "Factura " + f.numero : "Factura"}>
+  <a href="/facturas" class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink mb-4 transition-colors">
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    Volver a facturación
+  </a>
+
+  <div class="flex items-end justify-between mb-6 flex-wrap gap-4">
+    <div>
+      <div class="text-xs text-muted font-medium uppercase tracking-wide">Comprobante fiscal</div>
+      <h1 class="font-display text-3xl font-bold text-ink mt-1">{f ? f.numero : "Factura"}</h1>
+      {f && <p class="text-muted mt-1.5">Emitida el {new Date(f.fecha_emision).toLocaleString("es")}</p>}
+    </div>
+    {f && f.estado === "EMITIDA" && (
+      <form method="POST" action={"/facturas/" + f.id + "/pagar"}>
+        <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-success to-success/80 text-white font-semibold shadow-md shadow-success/30 hover:shadow-lg transition-all">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          Cobrar factura
+        </button>
+      </form>
+    )}
+  </div>
+
+  {f ? (
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] overflow-hidden">
+          <div class="px-6 py-4 border-b border-line">
+            <h2 class="font-semibold text-ink">Paciente</h2>
+          </div>
+          <div class="p-6">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-100 to-brand-200 text-brand-700 grid place-items-center font-bold text-lg" style="background:linear-gradient(to bottom right,#c9d0e0,#b0bdd4);color:var(--color-navy)">
+                {f.paciente_nombre[0]}{f.paciente_apellido[0]}
+              </div>
+              <div>
+                <div class="font-display text-xl font-semibold text-ink">{f.paciente_nombre} {f.paciente_apellido}</div>
+                <div class="text-sm text-muted">Cédula {f.paciente_cedula}</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold ${
+                f.estado === "PAGADA" ? "bg-success-soft text-success" :
+                f.estado === "ANULADA" ? "bg-danger-soft text-danger" :
+                "bg-warning-soft text-warning"
+              }`}>
+                <span class={`w-2 h-2 rounded-full ${
+                  f.estado === "PAGADA" ? "bg-success" :
+                  f.estado === "ANULADA" ? "bg-danger" :
+                  "bg-warning"
+                }`}></span>
+                {f.estado}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] overflow-hidden">
+          <div class="px-6 py-4 border-b border-line">
+            <h2 class="font-semibold text-ink">Detalle</h2>
+            <p class="text-xs text-muted mt-0.5">{f.items.length} {f.items.length === 1 ? "línea" : "líneas"}</p>
+          </div>
+          <table class="w-full">
+            <thead class="bg-line-soft/50 border-b border-line">
+              <tr class="text-left text-xs text-muted uppercase tracking-wider">
+                <th class="px-6 py-3 font-semibold">Tipo</th>
+                <th class="px-6 py-3 font-semibold">Descripción</th>
+                <th class="px-6 py-3 font-semibold text-right">Cant.</th>
+                <th class="px-6 py-3 font-semibold text-right">Precio</th>
+                <th class="px-6 py-3 font-semibold text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-line">
+              {f.items.map((it) => (
+                <tr class="hover:bg-line-soft/30 transition-colors">
+                  <td class="px-6 py-3.5">
+                    <span class={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${
+                      it.tipo === "SERVICIO" ? "bg-info-soft text-info" : "badge-producto"
+                    }`} style={it.tipo !== "SERVICIO" ? "background: var(--color-coral-50); color: var(--color-coral-600); border: 1px solid var(--color-coral-100);" : undefined}>{it.tipo}</span>
+                  </td>
+                  <td class="px-6 py-3.5 font-medium text-ink">{it.descripcion}</td>
+                  <td class="px-6 py-3.5 text-right text-ink-2 tabular-nums">{it.cantidad}</td>
+                  <td class="px-6 py-3.5 text-right text-ink-2 tabular-nums">{fmt(it.precio_unitario)}</td>
+                  <td class="px-6 py-3.5 text-right font-semibold text-ink tabular-nums">{fmt(it.subtotal)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="lg:col-span-1">
+        <div class="bg-gradient-to-br from-brand-50 to-white rounded-2xl border border-brand-100 p-6 sticky top-24" style="background:linear-gradient(to bottom right,#e8ebf3,white);border-color:#c9d0e0">
+          <h2 class="font-semibold text-ink mb-4">Resumen</h2>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-muted">Subtotal</span>
+              <span class="font-medium text-ink tabular-nums">{fmt(f.subtotal)}</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-muted">Impuestos</span>
+              <span class="font-medium text-ink tabular-nums">{fmt(f.impuestos)}</span>
+            </div>
+            <div class="pt-3 border-t border-brand-100" style="border-color:#c9d0e0">
+              <div class="flex justify-between items-baseline">
+                <span class="font-semibold text-ink">Total</span>
+                <span class="font-display text-3xl font-bold text-brand-700 tabular-nums" style="color:var(--color-navy)">{fmt(f.total)}</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-6 pt-4 border-t border-brand-100 text-xs text-muted" style="border-color:#c9d0e0">
+            <p>Documento generado automáticamente al cerrar la consulta.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : (
+    <div class="bg-white rounded-2xl border border-line p-12 text-center">
+      <p class="text-muted">No se pudo cargar la factura.</p>
+    </div>
+  )}
+</Layout>

@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+**/node_modules/
+**/bun.lockb
+**/package-lock.json
+
+# Build outputs
+dist/
+build/
+.next/
+.output/
+.turbo/
+
+# Environment (use .env.example instead)
+.env
+**/.env
+!.env.example
+
+# Logs
+*.log
+logs/
+**/logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data uploads (ephemeral)
+data/uploads/*
+!data/uploads/.gitkeep
+
+# Generated docs (regenerate locally)
+VetSys_Diagramas.html
+VetSys_Diagramas.pdf
+VetSys_RUP_Completo.html
+VetSys_RUP_Completo.pdf
+
+# Obsidian workspace (personal config)
+.obsidian/workspace.json
+.obsidian/cache/
+.trash/
+
+# Test artifacts
+coverage/
+**/coverage/
+
+# Temp
+tmp/
+**/tmp/
+
+# Obsidian plugins (third-party, regenerate on clone)
+.obsidian/plugins/*
+.obsidian/themes/*
+
+# Railway-specific files (only needed if deploying to Railway)
+.cache/
+.tools/
+*.pdf
+*.zip
+entrega/03-software/vetsys-codigo/
+
+# Astro cache
+.astro/

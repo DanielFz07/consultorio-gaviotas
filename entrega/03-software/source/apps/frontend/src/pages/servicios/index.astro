@@ -1,0 +1,81 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { api, isError } from "../../lib/api";
+
+const r = await api.get<Array<{ id: number; codigo: string; nombre: string; descripcion: string; precio: string; duracion_minutos: number; activo: boolean }>>(
+  Astro, `/api/servicios?todos=true`
+);
+const servicios = r.ok && !isError(r.data) ? r.data : [];
+const esAdmin = Astro.locals.user?.rol === "ADMIN";
+---
+<Layout title="Servicios">
+  <div class="mb-6 flex items-end justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="font-display text-3xl font-bold text-ink">Servicios</h1>
+      <p class="text-muted mt-1">Catálogo de servicios que ofrece la clínica. Se asignan a las consultas.</p>
+    </div>
+    {esAdmin && (
+      <a href="/servicios/nuevo" class="btn btn-primary">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Nuevo servicio
+      </a>
+    )}
+  </div>
+
+  <div class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] overflow-hidden">
+    {servicios.length === 0 ? (
+      <div class="px-6 py-20 text-center">
+        <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-info-soft to-brand-50 grid place-items-center mb-4" style="background:linear-gradient(to bottom right,var(--color-info-soft),#e8ebf3)">
+          <svg class="w-10 h-10 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <p class="font-display text-xl font-semibold text-ink">Sin servicios</p>
+        <p class="text-sm text-muted mt-1.5">Crea el primer servicio para empezar.</p>
+        {esAdmin && (
+          <a href="/servicios/nuevo" class="btn btn-primary">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Crear primer servicio
+          </a>
+        )}
+      </div>
+    ) : (
+      <table class="w-full">
+        <thead class="bg-line-soft/50 border-b border-line">
+          <tr class="text-left text-xs text-muted uppercase tracking-wider">
+            <th class="px-6 py-3 font-semibold">Código</th>
+            <th class="px-6 py-3 font-semibold">Servicio</th>
+            <th class="px-6 py-3 font-semibold">Descripción</th>
+            <th class="px-6 py-3 font-semibold text-right">Precio</th>
+            <th class="px-6 py-3 font-semibold text-right">Duración</th>
+            <th class="px-6 py-3 font-semibold">Estado</th>
+            {esAdmin && <th class="px-6 py-3 font-semibold text-right">Acción</th>}
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-line">
+          {servicios.map((s) => (
+            <tr class="hover:bg-line-soft/30 transition-colors">
+              <td class="px-6 py-4 text-sm text-muted font-mono">{s.codigo || "—"}</td>
+              <td class="px-6 py-4">
+                <a href={`/servicios/${s.id}`} class="font-medium text-ink hover:text-brand-700 transition-colors">{s.nombre}</a>
+              </td>
+              <td class="px-6 py-4 text-sm text-muted max-w-xs truncate">{s.descripcion || "—"}</td>
+              <td class="px-6 py-4 text-right font-mono font-semibold text-ink">${Number(s.precio).toFixed(2)}</td>
+              <td class="px-6 py-4 text-right text-ink-2 text-sm font-mono">{s.duracion_minutos} min</td>
+              <td class="px-6 py-4">
+                {s.activo ? (
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-success-soft text-success">Activo</span>
+                ) : (
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-line-soft text-muted">Inactivo</span>
+                )}
+              </td>
+              {esAdmin && (
+                <td class="px-6 py-4 text-right">
+                  <a href={`/servicios/${s.id}`} class="text-sm font-medium text-brand-600 hover:text-brand-700" style="color:#1a2c54">Editar</a>
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </div>
+</Layout>

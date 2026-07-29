@@ -1,0 +1,113 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { api, isError } from "../../lib/api";
+
+const user = Astro.locals.user;
+if (!user || user.rol === "MEDICO") {
+  return Astro.redirect("/dashboard");
+}
+
+const hoy = new Date().toISOString().slice(0, 10);
+const fecha = Astro.url.searchParams.get("fecha") ?? hoy;
+const r = await api.get<Array<{ id: number; numero: string; fecha_emision: string; paciente_nombre: string; paciente_apellido: string; total: string; estado: string }>>(
+  Astro, `/api/facturas?fecha=${fecha}`
+);
+const facturas = r.ok && !isError(r.data) ? r.data : [];
+const total = facturas.reduce((acc, f) => acc + Number(f.total), 0);
+const cobrado = facturas.filter((f) => f.estado === "PAGADA").reduce((acc, f) => acc + Number(f.total), 0);
+---
+<Layout title="Facturación">
+  <div class="mb-6">
+    <h1 class="font-display text-3xl font-bold text-ink">Facturación</h1>
+    <p class="text-muted mt-1">Numeración correlativa, IVA incluido. Las facturas se pueden anular solo por admin.</p>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-2xl p-5 border border-line shadow-sm shadow-brand-900/[0.02]">
+      <div class="text-xs text-muted font-medium uppercase tracking-wide">Facturas</div>
+      <div class="text-3xl font-bold text-ink mt-2 tabular-nums">{facturas.length.toString().padStart(2, "0")}</div>
+      <div class="text-xs text-muted mt-1">{fecha}</div>
+    </div>
+    <div class="bg-white rounded-2xl p-5 border border-line shadow-sm shadow-brand-900/[0.02]">
+      <div class="text-xs text-muted font-medium uppercase tracking-wide">Total emitido</div>
+      <div class="text-3xl font-bold text-ink mt-2 tabular-nums">${total.toFixed(2)}</div>
+      <div class="text-xs text-muted mt-1">IVA incluido</div>
+    </div>
+    <div class="bg-white rounded-2xl p-5 border border-line shadow-sm shadow-brand-900/[0.02]">
+      <div class="text-xs text-muted font-medium uppercase tracking-wide">Cobrado</div>
+      <div class="text-3xl font-bold text-success mt-2 tabular-nums">${cobrado.toFixed(2)}</div>
+      <div class="text-xs text-success mt-1 font-medium">{facturas.filter((f) => f.estado === "PAGADA").length} facturas</div>
+    </div>
+    <div class="bg-white rounded-2xl p-5 border border-line shadow-sm shadow-brand-900/[0.02]">
+      <div class="text-xs text-muted font-medium uppercase tracking-wide">Pendiente</div>
+      <div class="text-3xl font-bold text-warning mt-2 tabular-nums">${(total - cobrado).toFixed(2)}</div>
+      <div class="text-xs text-muted mt-1">{facturas.filter((f) => f.estado === "EMITIDA").length} por cobrar</div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] p-5 mb-6">
+    <form method="GET" class="flex items-center gap-3 flex-wrap">
+      <label class="text-sm font-medium text-ink" for="fecha">Ver fecha:</label>
+      <input id="fecha" name="fecha" type="date" value={fecha} class="px-3.5 py-2 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm" />
+      <button class="btn btn-primary">Aplicar</button>
+      <a href="/facturas" class="px-4 py-2 rounded-xl text-ink text-sm font-medium hover:bg-line-soft transition-colors">Hoy</a>
+    </form>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] overflow-hidden">
+    {facturas.length === 0 ? (
+      <div class="px-6 py-20 text-center">
+        <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-accent-50 to-warning-100 grid place-items-center mb-4">
+          <svg class="w-10 h-10 text-accent-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+        </div>
+        <p class="font-display text-xl font-semibold text-ink">Sin movimientos</p>
+        <p class="text-sm text-muted mt-1.5">No hay facturas para esta fecha.</p>
+      </div>
+    ) : (
+      <table class="w-full">
+        <thead class="bg-line-soft/50 border-b border-line">
+          <tr class="text-left text-xs text-muted uppercase tracking-wider">
+            <th class="px-6 py-3 font-semibold">Número</th>
+            <th class="px-6 py-3 font-semibold">Paciente</th>
+            <th class="px-6 py-3 font-semibold">Hora</th>
+            <th class="px-6 py-3 font-semibold text-right">Total</th>
+            <th class="px-6 py-3 font-semibold">Estado</th>
+            <th class="px-6 py-3 font-semibold text-right">Acción</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-line">
+          {facturas.map((f) => (
+            <tr class="hover:bg-line-soft/30 transition-colors">
+              <td class="px-6 py-4 font-mono text-sm font-semibold text-brand-700" style="color:var(--color-navy)">{f.numero}</td>
+              <td class="px-6 py-4 font-medium text-ink">{f.paciente_nombre} {f.paciente_apellido}</td>
+              <td class="px-6 py-4 text-muted text-sm tabular-nums">{new Date(f.fecha_emision).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}</td>
+              <td class="px-6 py-4 text-right font-bold text-ink tabular-nums">${Number(f.total).toFixed(2)}</td>
+              <td class="px-6 py-4">
+                <span class={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                  f.estado === "PAGADA" ? "bg-success-soft text-success" :
+                  f.estado === "ANULADA" ? "bg-danger-soft text-danger" :
+                  "bg-warning-soft text-warning"
+                }`}>
+                  <span class={`w-1.5 h-1.5 rounded-full ${
+                    f.estado === "PAGADA" ? "bg-success" :
+                    f.estado === "ANULADA" ? "bg-danger" :
+                    "bg-warning"
+                  }`}></span>
+                  {f.estado}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right whitespace-nowrap space-x-2">
+                <a href={`/facturas/${f.id}`} class="text-sm font-medium text-brand-600 hover:text-brand-700" style="color:#1a2c54">Ver</a>
+                {f.estado === "EMITIDA" && (
+                  <form method="POST" action={`/facturas/${f.id}/pagar`} class="inline">
+                    <button class="text-sm font-medium text-success hover:text-success/80">Cobrar</button>
+                  </form>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </div>
+</Layout>

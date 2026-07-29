@@ -1,0 +1,54 @@
+.login-body {
+  margin: 0;
+  min-height: 100vh;
+  background: #fafaf6;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 31px, #d4cfb8 31px 32px),
+    repeating-linear-gradient(90deg, transparent 0 31px, #d4cfb8 31px 32px);
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+}
+.login-body * { box-sizing: border-box; }
+.login-sheet {
+  width: 100%;
+  max-width: 480px;
+  background: #fafaf6;
+  border: 1px solid #0a0a0a;
+  border-radius: 2px;
+}
+.login-stamp {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 24px;
+  border-bottom: 1px solid #0a0a0a;
+  background: #f4f1e4;
+}
+.login-stamp .brand { font-weight: 600; font-size: 16px; letter-spacing: -0.01em; }
+.login-stamp .brand span { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #3f3f3f; margin-left: 8px; font-weight: 400; }
+.login-stamp .meta { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #3f3f3f; }
+.login-rule { height: 2px; background: #0a0a0a; }
+.login-body-inner { padding: 32px 24px; }
+.login-body-inner h1 { margin: 0 0 8px; font-size: 28px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.1; color: #0a0a0a; }
+.login-body-inner .lede { margin: 0 0 24px; font-size: 14px; color: #3f3f3f; line-height: 1.5; }
+.login-body-inner label {
+  display: block; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #3f3f3f; margin: 16px 0 4px;
+}
+.login-body-inner input {
+  width: 100%; padding: 10px 12px; font-family: "IBM Plex Sans", sans-serif; font-size: 14px; color: #0a0a0a; background: #fafaf6; border: 1px solid #3f3f3f; border-radius: 2px; outline: none;
+}
+.login-body-inner input:focus { border-color: #0a0a0a; box-shadow: 0 0 0 2px #dcfce7; }
+.login-body-inner .btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font-family: "IBM Plex Sans", sans-serif; font-size: 13px; font-weight: 500;
+  padding: 0 16px; height: 40px; background: #0a0a0a; color: #fafaf6; border: 1px solid #0a0a0a; border-radius: 2px; cursor: pointer;
+}
+.login-body-inner .btn:hover { background: #fafaf6; color: #0a0a0a; }
+.login-body-inner .alert { padding: 10px 14px; font-size: 13px; border: 1px solid #9f1239; border-top-width: 2px; margin: 0 0 16px; color: #9f1239; }
+.login-body-inner .alert .code { font-family: "IBM Plex Mono", monospace; font-size: 11px; opacity: 0.7; margin-right: 8px; }
+.login-footer {
+  display: flex; justify-content: space-between; padding: 10px 24px; border-top: 1px solid #d4cfb8;
+  font-family: "IBM Plex Mono", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #3f3f3f;
+}

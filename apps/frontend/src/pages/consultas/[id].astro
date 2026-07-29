@@ -1,0 +1,414 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { api, isError } from "../../lib/api";
+
+const { id } = Astro.params;
+const token = Astro.cookies.get("consultorio-gaviotas_token")?.value ?? "";
+
+const rCitas = await api.get(Astro, `/api/citas/${id}`);
+const cita = rCitas.ok && !isError(rCitas.data) ? rCitas.data : null;
+
+const rServ = await api.get<Array<{ id: number; nombre: string; precio: string }>>(Astro, "/api/servicios");
+const servicios = rServ.ok && !isError(rServ.data) ? rServ.data : [];
+
+const rProd = await api.get<Array<{ id: number; nombre: string; stock_actual: number; precio_venta: string; unidad: string }>>(Astro, "/api/productos");
+const productos = rProd.ok && !isError(rProd.data) ? rProd.data : [];
+
+interface ConsultaItem {
+  id: number;
+  tipo: "SERVICIO" | "PRODUCTO";
+  nombre: string;
+  cantidad: number;
+  precio: number;
+  subtotal: number;
+  extra: { dosis?: string; frecuencia?: string; duracion?: string } | null;
+}
+interface ItemsResp { items: ConsultaItem[]; subtotal: number; impuestos: number; total: number }
+
+let itemsData: ItemsResp = { items: [], subtotal: 0, impuestos: 0, total: 0 };
+let consultaActivaId: number | null = null;
+if (cita) {
+  const rC = await api.get<{ id: number | null }>(Astro, `/api/citas/${id}/consulta-activa`);
+  if (rC.ok && !isError(rC.data) && rC.data?.id) {
+    consultaActivaId = rC.data.id;
+    const rI = await api.get<ItemsResp>(Astro, `/api/consultas/${consultaActivaId}/items`);
+    if (rI.ok && !isError(rI.data)) itemsData = rI.data;
+  }
+}
+
+const pasos = [
+  { num: 1, label: "Síntomas" },
+  { num: 2, label: "Servicios" },
+  { num: 3, label: "Prescripción" },
+  { num: 4, label: "Finalizar" },
+];
+
+// En producción el API está en otro puerto. El middleware de Astro hace de
+// proxy: las llamadas a /api/* se redirigen internamente al API en localhost:3001.
+const fmt = (n: number) => `$${n.toFixed(2)}`;
+---
+<Layout title={`Consulta · Cita ${id}`}>
+  <a href="/consultas" class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink mb-4 transition-colors">
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    Volver
+  </a>
+
+  {!cita ? (
+    <div class="bg-white rounded-2xl border border-line p-12 text-center">
+      <p class="text-muted">No se encontró la cita.</p>
+    </div>
+  ) : (
+    <>
+      <div class="mb-6">
+        <h1 class="font-display text-3xl font-bold text-ink">Atención de consulta</h1>
+        <p class="text-muted mt-1">Cita #{id} · <strong class="text-ink">{cita.paciente_nombre} {cita.paciente_apellido}</strong></p>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] p-5 mb-6">
+        <div class="flex items-center justify-between">
+          {pasos.map((p, idx) => (
+            <>
+              <div class="flex flex-col items-center gap-2 flex-1">
+                <div class={`paso-dot w-10 h-10 rounded-full grid place-items-center font-semibold text-sm transition-all ${consultaActivaId ? "bg-success text-white" : "bg-line-soft text-muted"}`}>
+                  {consultaActivaId ? "✓" : p.num}
+                </div>
+                <div class={`text-xs font-medium ${consultaActivaId ? "text-success" : "text-muted"}`}>{p.label}</div>
+              </div>
+              {idx < pasos.length - 1 && <div class={`paso-line flex-1 h-0.5 mx-2 -mt-6 ${consultaActivaId ? "bg-success" : "bg-line"}`}></div>}
+            </>
+          ))}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+          {!consultaActivaId && (
+            <div id="step1" class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] p-8">
+              <div class="flex items-center gap-3 mb-5">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 text-white grid place-items-center font-semibold" style="background:linear-gradient(to bottom right,#0f1d3d,#1a2c54);color:white">1</div>
+                <h2 class="font-semibold text-ink text-lg">Abrir consulta</h2>
+              </div>
+              <form id="formIniciar" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-semibold text-ink mb-1.5" for="sintomas">Síntomas observados <span class="text-danger">*</span></label>
+                  <textarea id="sintomas" name="sintomas" required rows="2" placeholder="Decaimiento, vómitos, fiebre..." class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all resize-none"></textarea>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-ink mb-1.5" for="diagnostico">Diagnóstico <span class="text-danger">*</span></label>
+                  <textarea id="diagnostico" name="diagnostico" required rows="2" placeholder="Gastritis leve..." class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all resize-none"></textarea>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-ink mb-1.5" for="tratamiento">Tratamiento</label>
+                  <textarea id="tratamiento" name="tratamiento" rows="2" placeholder="Dieta, reposo, medicación..." class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all resize-none"></textarea>
+                </div>
+                <button type="submit" class="submit-btn btn btn-primary disabled:opacity-50 w-full sm:w-auto">
+                  <span class="btn-text">Abrir consulta</span>
+                </button>
+              </form>
+            </div>
+          )}
+
+          {consultaActivaId && (
+            <div id="step23" class="space-y-6">
+              <input type="hidden" id="consultaId" value={consultaActivaId} />
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] p-6">
+                  <div class="flex items-center gap-3 mb-5">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 text-white grid place-items-center font-semibold" style="background:linear-gradient(to bottom right,#0f1d3d,#1a2c54);color:white">2</div>
+                    <div>
+                      <h2 class="font-semibold text-ink text-lg">Servicios</h2>
+                      <p class="text-xs text-muted">Agrega los que se realizaron</p>
+                    </div>
+                  </div>
+                  <form id="formServicio" class="space-y-3">
+                    <div>
+                      <label class="block text-sm font-semibold text-ink mb-1.5" for="servicioId">Servicio</label>
+                      <select id="servicioId" name="servicioId" required class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all bg-white">
+                        {servicios.map((s) => <option value={s.id}>{s.nombre} · ${Number(s.precio).toFixed(2)}</option>)}
+                      </select>
+                    </div>
+                    <button type="submit" class="submit-btn btn btn-primary w-full disabled:opacity-50">
+                      <span class="btn-text">Agregar servicio</span>
+                    </button>
+                  </form>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] p-6">
+                  <div class="flex items-center gap-3 mb-5">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 text-white grid place-items-center font-semibold" style="background:linear-gradient(to bottom right,#0f1d3d,#1a2c54);color:white">3</div>
+                    <div>
+                      <h2 class="font-semibold text-ink text-lg">Prescripción</h2>
+                      <p class="text-xs text-muted">Descuenta stock al guardar</p>
+                    </div>
+                  </div>
+                  <form id="formPrescripcion" class="space-y-3">
+                    <div>
+                      <label class="block text-sm font-semibold text-ink mb-1.5" for="productoId">Producto</label>
+                      <select id="productoId" name="productoId" required class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all bg-white">
+                        {productos.map((p) => <option value={p.id}>{p.nombre} · stock {p.stock_actual} {p.unidad}</option>)}
+                      </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <label class="block text-sm font-semibold text-ink mb-1.5" for="cantidad">Cantidad <span class="text-danger">*</span></label>
+                        <input id="cantidad" name="cantidad" type="number" min="1" required class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-semibold text-ink mb-1.5" for="dosis">Dosis</label>
+                        <input id="dosis" name="dosis" placeholder="1 comp" class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" />
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <label class="block text-sm font-semibold text-ink mb-1.5" for="frecuencia">Frecuencia</label>
+                        <input id="frecuencia" name="frecuencia" placeholder="cada 12h" class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-semibold text-ink mb-1.5" for="duracion">Duración</label>
+                        <input id="duracion" name="duracion" placeholder="5 días" class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" />
+                      </div>
+                    </div>
+                    <button type="submit" class="submit-btn btn btn-primary w-full disabled:opacity-50">
+                      <span class="btn-text">Registrar prescripción</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <div class="bg-gradient-to-br from-success-soft/40 to-white rounded-2xl border border-success/20 p-6">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-success to-success/80 text-white grid place-items-center">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  </div>
+                  <div>
+                    <h2 class="font-semibold text-ink text-lg">Finalizar consulta</h2>
+                    <p class="text-xs text-ink-2">Al cerrar se emite la factura y se descuenta el stock definitivamente</p>
+                  </div>
+                </div>
+                <button id="btnFinalizar" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-success to-success/80 text-white font-semibold shadow-md shadow-success/30 hover:shadow-lg transition-all">
+                  Finalizar y emitir factura
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <aside class="lg:col-span-1">
+          <div class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] sticky top-24 overflow-hidden">
+            <div class="px-5 py-4 border-b border-line flex items-center justify-between">
+              <h2 class="font-semibold text-ink text-sm">Resumen de la consulta</h2>
+              <span class="text-xs text-muted font-mono" id="itemsCount">{itemsData.items.length}</span>
+            </div>
+
+            <div id="itemsList" class="max-h-96 overflow-y-auto divide-y divide-line">
+              {itemsData.items.length === 0 ? (
+                <div class="px-5 py-10 text-center text-sm text-muted">
+                  Aún no agregaste servicios ni prescripciones.
+                </div>
+              ) : (
+                itemsData.items.map((it) => (
+                  <div class="px-5 py-3 flex items-start gap-3">
+                    <div class={`w-7 h-7 rounded-lg grid place-items-center text-xs font-bold flex-shrink-0 ${it.tipo === "SERVICIO" ? "bg-info-soft text-info" : "badge-producto"}`} style={it.tipo !== "SERVICIO" ? "background: var(--color-coral-50); color: var(--color-coral-600); border: 1px solid var(--color-coral-100);" : undefined}>
+                      {it.tipo === "SERVICIO" ? "S" : "P"}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="text-sm font-medium text-ink truncate">{it.nombre}</div>
+                      <div class="text-xs text-muted">{it.cantidad} × {fmt(it.precio)} = <span class="text-ink font-semibold">{fmt(it.subtotal)}</span></div>
+                      {it.extra && (it.extra.dosis || it.extra.frecuencia || it.extra.duracion) && (
+                        <div class="text-[11px] text-muted mt-0.5">
+                          {it.extra.dosis}{it.extra.frecuencia ? ` · ${it.extra.frecuencia}` : ""}{it.extra.duracion ? ` · ${it.extra.duracion}` : ""}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div id="totalsPanel">
+              {itemsData.items.length > 0 && (
+                <div class="px-5 py-4 bg-line-soft/40 border-t border-line space-y-1.5">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-muted">Subtotal</span>
+                    <span class="font-mono text-ink">{fmt(itemsData.subtotal)}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-muted">Impuestos</span>
+                    <span class="font-mono text-ink">{fmt(itemsData.impuestos)}</span>
+                  </div>
+                  <div class="flex justify-between items-baseline pt-2 border-t border-line">
+                    <span class="font-semibold text-ink">Total</span>
+                    <span class="font-display text-2xl font-bold text-brand-700 font-mono" style="color:var(--color-navy)">{fmt(itemsData.total)}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </aside>
+      </div>
+    </>
+  )}
+
+  <script is:inline define:vars={{ token, citaId: id }}>
+    // Use relative URL so the browser always sends to the same origin as the page,
+    // and the Astro /api/* middleware proxies to the backend. This avoids CORS issues
+    // when the page is served through a reverse proxy on port 80.
+    const sendPath = (p) => p;
+    async function send(path, body) {
+      const res = await fetch(sendPath(path), {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        await window["consultorio-gaviotasToast"].fromResponse(res, "Error en la operación");
+        throw new Error("api_error");
+      }
+      return res.json();
+    }
+
+    function setLoading(btn, loading) {
+      btn.disabled = loading;
+      const text = btn.querySelector(".btn-text");
+      if (loading) {
+        btn.dataset.original = text.textContent;
+        text.textContent = "Procesando...";
+      } else {
+        text.textContent = btn.dataset.original || text.textContent;
+      }
+    }
+
+    const fmt = (n) => "$" + Number(n).toFixed(2);
+    function escape(s) { return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+    async function refreshItems() {
+      const cid = document.getElementById("consultaId")?.value;
+      if (!cid) return;
+      const res = await fetch("/api/consultas/" + cid + "/items", { headers: { Authorization: "Bearer " + token } });
+      if (!res.ok) return;
+      const data = await res.json();
+      renderItems(data);
+    }
+
+    function renderItems(data) {
+      const list = document.getElementById("itemsList");
+      const count = document.getElementById("itemsCount");
+      if (!list) return;
+      if (count) count.textContent = data.items.length;
+      if (data.items.length === 0) {
+        list.innerHTML = '<div class="px-5 py-10 text-center text-sm text-muted">Aún no agregaste servicios ni prescripciones.</div>';
+      } else {
+        list.innerHTML = data.items.map((it) => {
+          const icon = it.tipo === "SERVICIO"
+            ? '<div class="w-7 h-7 rounded-lg grid place-items-center text-xs font-bold flex-shrink-0 bg-info-soft text-info">S</div>'
+            : '<div class="w-7 h-7 rounded-lg grid place-items-center text-xs font-bold flex-shrink-0 badge-producto" style="background: var(--color-coral-50); color: var(--color-coral-600); border: 1px solid var(--color-coral-100);">P</div>';
+          const extra = it.extra ? [it.extra.dosis, it.extra.frecuencia, it.extra.duracion].filter(Boolean).join(" · ") : "";
+          return '<div class="px-5 py-3 flex items-start gap-3">'
+            + icon
+            + '<div class="flex-1 min-w-0">'
+            +   '<div class="text-sm font-medium text-ink truncate">' + escape(it.nombre) + '</div>'
+            +   '<div class="text-xs text-muted">' + it.cantidad + ' × ' + fmt(it.precio) + ' = <span class="text-ink font-semibold">' + fmt(it.subtotal) + '</span></div>'
+            +   (extra ? '<div class="text-[11px] text-muted mt-0.5">' + escape(extra) + '</div>' : '')
+            + '</div></div>';
+        }).join("");
+      }
+      const totalsEl = document.getElementById("totalsPanel");
+      if (totalsEl) {
+        if (data.items.length > 0) {
+          totalsEl.innerHTML =
+            '<div class="px-5 py-4 bg-line-soft/40 border-t border-line space-y-1.5">' +
+              '<div class="flex justify-between text-sm"><span class="text-muted">Subtotal</span><span class="font-mono text-ink">' + fmt(data.subtotal) + '</span></div>' +
+              '<div class="flex justify-between text-sm"><span class="text-muted">Impuestos</span><span class="font-mono text-ink">' + fmt(data.impuestos) + '</span></div>' +
+              '<div class="flex justify-between items-baseline pt-2 border-t border-line"><span class="font-semibold text-ink">Total</span><span class="font-display text-2xl font-bold text-brand-700 font-mono" style="color:var(--color-navy)">' + fmt(data.total) + '</span></div>' +
+            '</div>';
+        } else {
+          totalsEl.innerHTML = "";
+        }
+      }
+    }
+
+    const formIniciar = document.getElementById("formIniciar");
+    if (formIniciar) {
+      formIniciar.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = formIniciar.querySelector(".submit-btn");
+        setLoading(btn, true);
+        try {
+          const fd = new FormData(formIniciar);
+          await send("/api/citas/" + citaId + "/consulta", {
+            sintomas: fd.get("sintomas"),
+            diagnostico: fd.get("diagnostico"),
+            tratamiento: fd.get("tratamiento") || null,
+          });
+          window["consultorio-gaviotasToast"].success("Consulta abierta");
+          setTimeout(() => window.location.reload(), 600);
+        } catch {}
+        setLoading(btn, false);
+      });
+    }
+
+    const formServicio = document.getElementById("formServicio");
+    if (formServicio) {
+      formServicio.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = formServicio.querySelector(".submit-btn");
+        const cid = document.getElementById("consultaId").value;
+        const fd = new FormData(formServicio);
+        setLoading(btn, true);
+        try {
+          await send("/api/consultas/" + cid + "/servicios", {
+            servicioId: Number(fd.get("servicioId")),
+            cantidad: 1,
+          });
+          window["consultorio-gaviotasToast"].success("Servicio agregado");
+          formServicio.reset();
+          await refreshItems();
+        } catch {}
+        setLoading(btn, false);
+      });
+    }
+
+    const formPrescripcion = document.getElementById("formPrescripcion");
+    if (formPrescripcion) {
+      formPrescripcion.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = formPrescripcion.querySelector(".submit-btn");
+        const cid = document.getElementById("consultaId").value;
+        const fd = new FormData(formPrescripcion);
+        setLoading(btn, true);
+        try {
+          await send("/api/consultas/" + cid + "/prescripciones", {
+            productoId: Number(fd.get("productoId")),
+            cantidad: Number(fd.get("cantidad")),
+            dosis: fd.get("dosis") || null,
+            frecuencia: fd.get("frecuencia") || null,
+            duracion: fd.get("duracion") || null,
+          });
+          window["consultorio-gaviotasToast"].success("Prescripción registrada · stock descontado");
+          formPrescripcion.reset();
+          await refreshItems();
+        } catch {}
+        setLoading(btn, false);
+      });
+    }
+
+    const btnFinalizar = document.getElementById("btnFinalizar");
+    if (btnFinalizar) {
+      btnFinalizar.addEventListener("click", async () => {
+        if (!confirm("¿Cerrar consulta y emitir factura?")) return;
+        const cid = document.getElementById("consultaId").value;
+        const original = btnFinalizar.textContent;
+        btnFinalizar.disabled = true;
+        btnFinalizar.textContent = "Cerrando consulta...";
+        try {
+          const data = await send("/api/consultas/" + cid + "/finalizar", {});
+          window["consultorio-gaviotasToast"].success("Factura " + (data.facturaNumero || "") + " emitida · total " + fmt(data.total || 0));
+          setTimeout(() => { window.location.href = "/facturas"; }, 800);
+        } catch {
+          btnFinalizar.disabled = false;
+          btnFinalizar.textContent = original;
+        }
+      });
+    }
+  </script>
+</Layout>

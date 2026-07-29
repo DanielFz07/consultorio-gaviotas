@@ -1,0 +1,156 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { api, isError } from "../../lib/api";
+
+const user = Astro.locals.user;
+if (!user || user.rol !== "ADMIN") {
+  return Astro.redirect("/dashboard");
+}
+
+const accion = Astro.url.searchParams.get("accion") ?? "";
+const tabla = Astro.url.searchParams.get("tabla") ?? "";
+const params = new URLSearchParams();
+if (accion) params.set("accion", accion);
+if (tabla) params.set("tabla", tabla);
+const qs = params.toString();
+
+const [logsRes, loginsRes, statsRes] = await Promise.all([
+  api.get<any[]>(Astro, `/api/audit/logs?${qs}&limit=100`),
+  api.get<any[]>(Astro, `/api/audit/logins?limit=50`),
+  api.get<any>(Astro, `/api/audit/stats`),
+]);
+
+const logs = logsRes.ok && !isError(logsRes.data) ? logsRes.data : [];
+const logins = loginsRes.ok && !isError(loginsRes.data) ? loginsRes.data : [];
+const stats = statsRes.ok && !isError(statsRes.data) ? statsRes.data : { totales: {}, porAccion: [], porUsuario: [] };
+
+const fmtFecha = (f: string) => new Date(f).toLocaleString("es-VE");
+---
+<Layout title="Auditoría">
+  <div class="mb-6">
+    <h1 class="font-display text-3xl font-bold text-ink">Auditoría del sistema</h1>
+    <p class="text-muted mt-1">Registro de todas las operaciones realizadas.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-2xl border border-line shadow-sm p-5">
+      <p class="text-xs font-semibold text-muted uppercase tracking-wider">Eventos totales</p>
+      <p class="font-display text-3xl font-bold text-ink mt-2">{stats.totales?.total_eventos ?? 0}</p>
+    </div>
+    <div class="bg-white rounded-2xl border border-line shadow-sm p-5">
+      <p class="text-xs font-semibold text-muted uppercase tracking-wider">Logins OK</p>
+      <p class="font-display text-3xl font-bold text-brand-600 mt-2" style="color:#1a2c54">{stats.totales?.logins_ok ?? 0}</p>
+    </div>
+    <div class="bg-white rounded-2xl border border-line shadow-sm p-5">
+      <p class="text-xs font-semibold text-muted uppercase tracking-wider">Logins fallidos</p>
+      <p class="font-display text-3xl font-bold text-danger mt-2">{stats.totales?.logins_fail ?? 0}</p>
+    </div>
+    <div class="bg-white rounded-2xl border border-line shadow-sm p-5">
+      <p class="text-xs font-semibold text-muted uppercase tracking-wider">Mutaciones</p>
+      <p class="font-display text-3xl font-bold text-ink mt-2">{stats.totales?.mutaciones ?? 0}</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-line shadow-sm p-6 mb-6">
+    <h2 class="font-display text-lg font-bold text-ink mb-4">Por acción</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {stats.porAccion.map((it: any) => (
+        <div class="px-4 py-3 rounded-xl bg-line-soft/50">
+          <p class="text-xs font-mono text-muted">{it.accion}</p>
+          <p class="font-display text-xl font-bold text-ink mt-1">{it.total}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <form method="GET" class="bg-white rounded-2xl border border-line shadow-sm p-5 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="accion">Acción</label>
+        <select id="accion" name="accion" class="w-full px-4 py-2.5 rounded-xl border border-line bg-white">
+          <option value="">Todas</option>
+          {["LOGIN_OK", "LOGIN_FAIL", "LOGOUT", "CREATE", "READ", "UPDATE", "DELETE", "BACKUP", "RESTORE", "EXPORT"].map((a) => (
+            <option value={a} selected={accion === a}>{a}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="tabla">Tabla</label>
+        <input id="tabla" name="tabla" value={tabla} placeholder="paciente, consulta..." class="w-full px-4 py-2.5 rounded-xl border border-line" />
+      </div>
+      <div class="flex items-end gap-2">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        <a href="/auditoria" class="btn btn-ghost">Limpiar</a>
+      </div>
+    </div>
+  </form>
+
+  <div class="bg-white rounded-2xl border border-line shadow-sm overflow-hidden mb-6">
+    <div class="px-5 py-3 bg-line-soft/50 border-b border-line">
+      <h2 class="font-display text-lg font-bold text-ink">Eventos recientes</h2>
+    </div>
+    <table class="w-full">
+      <thead class="bg-line-soft/30">
+        <tr class="text-left text-xs font-semibold text-muted uppercase tracking-wider">
+          <th class="px-4 py-3">Fecha</th>
+          <th class="px-4 py-3">Usuario</th>
+          <th class="px-4 py-3">Acción</th>
+          <th class="px-4 py-3">Tabla</th>
+          <th class="px-4 py-3">Ruta</th>
+          <th class="px-4 py-3">IP</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-line">
+        {logs.length === 0 ? (
+          <tr><td colspan="6" class="px-4 py-8 text-center text-muted">Sin eventos</td></tr>
+        ) : logs.map((l: any) => (
+          <tr class="hover:bg-line-soft/20">
+            <td class="px-4 py-3 text-sm font-mono text-muted">{fmtFecha(l.created_at)}</td>
+            <td class="px-4 py-3 text-sm">{l.usuario_username ?? l.username_snapshot ?? "sistema"}</td>
+            <td class="px-4 py-3">
+              <span class={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${
+                l.accion.startsWith("LOGIN_FAIL") ? "bg-danger-soft text-danger" :
+                l.accion === "DELETE" ? "bg-warning-soft text-warning" :
+                l.accion.startsWith("LOGIN") ? "badge-navy" :
+                "bg-line-soft text-ink-2"
+              }`}>{l.accion}</span>
+            </td>
+            <td class="px-4 py-3 text-sm font-mono text-muted">{l.tabla ?? "—"}</td>
+            <td class="px-4 py-3 text-sm font-mono text-muted">{l.ruta}</td>
+            <td class="px-4 py-3 text-sm font-mono text-muted">{l.ip}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-line shadow-sm overflow-hidden">
+    <div class="px-5 py-3 bg-line-soft/50 border-b border-line">
+      <h2 class="font-display text-lg font-bold text-ink">Intentos de login recientes</h2>
+    </div>
+    <table class="w-full">
+      <thead class="bg-line-soft/30">
+        <tr class="text-left text-xs font-semibold text-muted uppercase tracking-wider">
+          <th class="px-4 py-3">Fecha</th>
+          <th class="px-4 py-3">Usuario</th>
+          <th class="px-4 py-3">Resultado</th>
+          <th class="px-4 py-3">IP</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-line">
+        {logins.slice(0, 20).map((l: any) => (
+          <tr class="hover:bg-line-soft/20">
+            <td class="px-4 py-3 text-sm font-mono text-muted">{fmtFecha(l.created_at)}</td>
+            <td class="px-4 py-3 text-sm font-mono">{l.username_intento}</td>
+            <td class="px-4 py-3">
+              <span class={l.exito ? "text-brand-600 font-semibold" : "text-danger font-semibold"} style={l.exito ? "color:#1a2c54" : undefined}>
+                {l.exito ? "✓ OK" : `✗ ${l.motivo_fallo ?? "fallo"}`}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-sm font-mono text-muted">{l.ip}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</Layout>

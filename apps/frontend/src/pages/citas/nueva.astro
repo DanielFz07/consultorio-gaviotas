@@ -1,0 +1,281 @@
+---
+import { getApiUrl } from "../../lib/api";
+import Layout from "../../layouts/Layout.astro";
+
+const token = Astro.cookies.get("consultorio-gaviotas_token")?.value ?? "";
+const API_URL = getApiUrl();
+
+let error: string | null = null;
+if (Astro.request.method === "POST") {
+  try {
+    const f = await Astro.request.formData();
+    const pacienteId = Number(f.get("pacienteId"));
+    if (!pacienteId) {
+      error = "Selecciona un paciente antes de agendar";
+    } else {
+      const res = await fetch(`${API_URL}/api/citas`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          pacienteId,
+          fecha: f.get("fecha")?.toString(),
+          horaInicio: f.get("horaInicio")?.toString(),
+          horaFin: f.get("horaFin")?.toString(),
+          tipoServicio: f.get("tipoServicio")?.toString(),
+          motivo: f.get("motivo")?.toString(),
+        }),
+      });
+      if (res.ok) {
+        return new Response(null, { status: 303, headers: { Location: "/citas" } });
+      }
+      const errData = (await res.json().catch(() => ({ message: "Error al agendar la cita" }))) as { message: string };
+      error = errData.message || `Error ${res.status} al agendar la cita`;
+    }
+  } catch (e) {
+    console.error("Error procesando POST /citas/nueva:", e);
+    error = "No se pudo procesar la solicitud. Intenta de nuevo.";
+  }
+}
+const hoy = new Date().toISOString().slice(0, 10);
+---
+<Layout title="Nueva cita">
+  <a href="/citas" class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink mb-4 transition-colors">
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    Volver a la agenda
+  </a>
+
+  <div class="mb-6">
+    <h1 class="font-display text-3xl font-bold text-ink">Agendar cita</h1>
+    <p class="text-muted mt-1">Busca al paciente y reserva un espacio en la agenda.</p>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] p-8 max-w-2xl">
+    {error && (
+      <div class="mb-5 p-3.5 rounded-xl bg-danger-soft border border-danger/20 text-danger text-sm flex items-start gap-2">
+        <svg class="w-5 h-5 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <span>{error}</span>
+      </div>
+    )}
+    <form method="POST" id="citaForm" class="space-y-5">
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="pacienteSearch">Paciente <span class="text-danger">*</span></label>
+        <input type="hidden" name="pacienteId" id="pacienteId" value="" />
+
+        <div id="searchWrap" class="relative">
+          <div class="relative">
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input
+              type="text"
+              id="pacienteSearch"
+              placeholder="Busca por nombre, apellido o cédula..."
+              autocomplete="off"
+              style="padding-left:48px;padding-right:16px;padding-top:12px;padding-bottom:12px"
+              class="w-full rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
+            />
+          </div>
+          <div id="pacienteResults" class="hidden absolute z-20 mt-2 w-full bg-white rounded-xl border border-line shadow-xl max-h-80 overflow-y-auto"></div>
+        </div>
+
+        <div id="pacienteSelected" class="hidden mt-3 p-4 rounded-xl bg-gradient-to-br from-brand-50 to-accent-50 border border-brand-200" style="background:linear-gradient(to bottom right,#e8ebf3,var(--color-accent-50));border-color:#b0bdd4">
+          <div class="flex items-center gap-3">
+            <div id="pacienteSelectedIcon" class="w-12 h-12 rounded-xl bg-white grid place-items-center text-2xl shadow-sm">🩺</div>
+            <div class="flex-1 min-w-0">
+              <div id="pacienteSelectedName" class="font-display text-lg font-bold text-ink"></div>
+              <div id="pacienteSelectedCedula" class="text-sm text-ink-2"></div>
+            </div>
+            <button type="button" id="pacienteChange" class="text-sm font-medium text-brand-700 hover:text-brand-800" style="color:var(--color-navy)">Cambiar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-ink mb-1.5" for="fecha">Fecha <span class="text-danger">*</span></label>
+          <input id="fecha" name="fecha" type="date" required min={hoy} value={hoy} class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-ink mb-1.5" for="tipoServicio">Tipo de servicio <span class="text-danger">*</span></label>
+          <select id="tipoServicio" name="tipoServicio" required class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all bg-white">
+            <option value="CONSULTA">Consulta general</option>
+            <option value="CONTROL">Control</option>
+            <option value="EXAMEN">Examen</option>
+            <option value="PROCEDIMIENTO">Procedimiento</option>
+            <option value="OTRO">Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-ink mb-1.5" for="horaInicio">Hora inicio <span class="text-danger">*</span></label>
+          <input id="horaInicio" name="horaInicio" type="time" required class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-ink mb-1.5" for="horaFin">Hora fin <span class="text-danger">*</span></label>
+          <input id="horaFin" name="horaFin" type="time" required class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="motivo">Motivo de la visita <span class="text-danger">*</span></label>
+        <textarea id="motivo" name="motivo" required minlength="5" rows="3" placeholder="Control anual, dolor abdominal, seguimiento..." class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all resize-none"></textarea>
+      </div>
+      <div class="flex items-center gap-3 pt-2">
+        <button type="submit" class="btn btn-primary text-black">
+          Agendar cita
+        </button>
+        <a href="/citas" class="btn btn-ghost">Cancelar</a>
+      </div>
+    </form>
+  </div>
+
+  <script is:inline define:vars={{ token }}>
+    // Use relative URL — same origin as the page, Astro /api/* middleware proxies to backend.
+    // Avoids CORS issues when served via reverse proxy.
+    const apiBase = "";
+    const searchInput = document.getElementById("pacienteSearch");
+    const resultsBox = document.getElementById("pacienteResults");
+    const selectedBox = document.getElementById("pacienteSelected");
+    const searchWrap = document.getElementById("searchWrap");
+    const hiddenInput = document.getElementById("pacienteId");
+    const changeBtn = document.getElementById("pacienteChange");
+    const form = document.getElementById("citaForm");
+
+    let pacientes = [];
+    let activeIndex = -1;
+
+    const initials = (p) => {
+      return ((p.nombre?.[0] ?? "") + (p.apellido?.[0] ?? "")).toUpperCase() || "P";
+    };
+
+    function renderResults(list) {
+      if (list.length === 0) {
+        resultsBox.innerHTML = '<div class="p-6 text-center"><div class="text-3xl mb-2">🔍</div><p class="text-sm text-muted">No encontramos pacientes con ese criterio</p><p class="text-xs text-muted mt-1">Probá con otro nombre o cédula, o <a href="/pacientes/nuevo" class="text-brand-600 hover:underline" style="color:#1a2c54">registrá uno nuevo</a></p></div>';
+        return;
+      }
+      resultsBox.innerHTML = list.map((p, i) => `
+        <button type="button" data-id="${p.id}" data-idx="${i}" class="paciente-option w-full text-left px-3 py-2.5 flex items-center gap-3 hover:bg-line-soft transition-colors ${i === activeIndex ? "bg-brand-50" : ""}" ${i === activeIndex ? 'style="background:#e8ebf3"' : ''}>
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-100 to-brand-200 grid place-items-center text-sm font-bold text-brand-700 flex-shrink-0" style="background:linear-gradient(to bottom right,#c9d0e0,#b0bdd4);color:var(--color-navy)">${initials(p)}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-ink text-sm">${p.apellido}, ${p.nombre}</div>
+            <div class="text-xs text-muted font-mono">${p.cedula}${p.telefono ? " · " + p.telefono : ""}</div>
+          </div>
+        </button>
+      `).join("");
+      resultsBox.querySelectorAll(".paciente-option").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-id");
+          const p = pacientes.find((x) => String(x.id) === id);
+          if (p) selectPaciente(p);
+        });
+      });
+    }
+
+    function filterPacientes(q) {
+      const norm = (s) => (s || "").toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const term = norm(q.trim());
+      if (!term) return pacientes.slice(0, 30);
+      return pacientes.filter((p) => {
+        return norm(p.nombre).includes(term) ||
+               norm(p.apellido).includes(term) ||
+               norm(p.cedula).includes(term);
+      }).slice(0, 30);
+    }
+
+    function selectPaciente(p) {
+      hiddenInput.value = p.id;
+      searchInput.value = "";
+      searchWrap.classList.add("hidden");
+      selectedBox.classList.remove("hidden");
+      document.getElementById("pacienteSelectedIcon").textContent = initials(p);
+      document.getElementById("pacienteSelectedName").textContent = `${p.apellido}, ${p.nombre}`;
+      document.getElementById("pacienteSelectedCedula").textContent = `${p.cedula}${p.telefono ? " · " + p.telefono : ""}`;
+      resultsBox.classList.add("hidden");
+    }
+
+    function clearSelection() {
+      hiddenInput.value = "";
+      searchInput.value = "";
+      selectedBox.classList.add("hidden");
+      searchWrap.classList.remove("hidden");
+      searchInput.focus();
+    }
+
+    searchInput.addEventListener("input", () => {
+      activeIndex = -1;
+      const filtered = filterPacientes(searchInput.value);
+      renderResults(filtered);
+      resultsBox.classList.remove("hidden");
+    });
+    searchInput.addEventListener("focus", () => {
+      const filtered = filterPacientes(searchInput.value);
+      renderResults(filtered);
+      resultsBox.classList.remove("hidden");
+    });
+    searchInput.addEventListener("keydown", (e) => {
+      const visible = Array.from(resultsBox.querySelectorAll(".paciente-option"));
+      if (e.key === "ArrowDown") { e.preventDefault(); activeIndex = Math.min(activeIndex + 1, visible.length - 1); renderResults(filterPacientes(searchInput.value)); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); activeIndex = Math.max(activeIndex - 1, 0); renderResults(filterPacientes(searchInput.value)); }
+      else if (e.key === "Enter") { e.preventDefault(); if (visible[activeIndex]) visible[activeIndex].click(); }
+      else if (e.key === "Escape") { resultsBox.classList.add("hidden"); }
+    });
+    changeBtn.addEventListener("click", clearSelection);
+    document.addEventListener("click", (e) => {
+      if (!searchWrap.contains(e.target) && !selectedBox.contains(e.target)) {
+        resultsBox.classList.add("hidden");
+      }
+    });
+    const submitBtn = form.querySelector("button[type='submit']");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (!hiddenInput.value) {
+        searchInput.focus();
+        searchInput.classList.add("ring-2", "ring-danger/30", "border-danger");
+        setTimeout(() => searchInput.classList.remove("ring-2", "ring-danger/30", "border-danger"), 2000);
+        window["consultorio-gaviotasToast"].error("Selecciona un paciente antes de agendar");
+        return;
+      }
+
+      const originalHTML = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/></svg> Agendando...';
+
+      try {
+        const fd = new FormData(form);
+        const res = await fetch(apiBase + "/api/citas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+          body: JSON.stringify({
+            pacienteId: Number(fd.get("pacienteId")),
+            fecha: fd.get("fecha"),
+            horaInicio: fd.get("horaInicio"),
+            horaFin: fd.get("horaFin"),
+            tipoServicio: fd.get("tipoServicio"),
+            motivo: fd.get("motivo"),
+          }),
+        });
+
+        if (res.ok) {
+          window["consultorio-gaviotasToast"].success("Cita agendada correctamente");
+          setTimeout(() => { window.location.href = "/citas"; }, 600);
+          return;
+        }
+
+        await window["consultorio-gaviotasToast"].fromResponse(res, "Error al agendar la cita");
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHTML;
+      } catch (err) {
+        window["consultorio-gaviotasToast"].error("No se pudo conectar con el servidor", String(err));
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHTML;
+      }
+    });
+
+    fetch(apiBase + "/api/pacientes", { headers: { Authorization: "Bearer " + token } })
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => { pacientes = Array.isArray(data) ? data : []; })
+      .catch(() => { pacientes = []; });
+  </script>
+</Layout>

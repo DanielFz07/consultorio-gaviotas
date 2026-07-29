@@ -1,0 +1,103 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { api, isError } from "../../lib/api";
+
+const hoy = new Date().toISOString().slice(0, 10);
+const fecha = Astro.url.searchParams.get("fecha") ?? hoy;
+const r = await api.get<Array<{ id: number; fecha: string; hora_inicio: string; hora_fin: string; paciente_nombre: string; paciente_apellido: string; tipo_servicio: string; estado: string; motivo: string }>>(
+  Astro, `/api/citas?fecha=${fecha}`
+);
+const citas = r.ok && !isError(r.data) ? r.data : [];
+---
+<Layout title="Agenda">
+  <div class="mb-6 flex items-end justify-between">
+    <div>
+      <h1 class="font-display text-3xl font-bold text-ink">Agenda</h1>
+      <p class="text-muted mt-1">Citas programadas. Filtra por fecha para ver otro día.</p>
+    </div>
+    <a href="/citas/nueva" class="btn btn-primary">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Nueva cita
+    </a>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] p-5 mb-6">
+    <form method="GET" class="flex items-center gap-3 flex-wrap">
+      <label class="text-sm font-medium text-ink" for="fecha">Ver fecha:</label>
+      <input id="fecha" name="fecha" type="date" value={fecha} class="px-3.5 py-2 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm" />
+      <button class="btn btn-primary">Aplicar</button>
+      <a href="/citas" class="px-4 py-2 rounded-xl text-ink text-sm font-medium hover:bg-line-soft transition-colors">Hoy</a>
+    </form>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] overflow-hidden">
+    {citas.length === 0 ? (
+      <div class="px-6 py-20 text-center">
+        <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-brand-50 to-accent-50 grid place-items-center mb-4" style="background:linear-gradient(to bottom right,#e8ebf3,var(--color-accent-50))">
+          <svg class="w-10 h-10 text-brand-500" style="color:#0f1d3d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v3M16 2v3M3.5 9.09h17M21 8.5V17c0 3-1.5 5-5 5H8c-3.5 0-5-2-5-5V8.5c0-3 1.5-5 5-5h8c3.5 0 5 2 5 5Z"/></svg>
+        </div>
+        <p class="font-display text-xl font-semibold text-ink">Día libre</p>
+        <p class="text-sm text-muted mt-1.5">No hay citas para {new Date(fecha + "T12:00:00").toLocaleDateString("es", { day: "numeric", month: "long" })}.</p>
+        <a href="/citas/nueva" class="btn btn-primary">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Agendar cita
+        </a>
+      </div>
+    ) : (
+      <table class="w-full">
+        <thead class="bg-line-soft/50 border-b border-line">
+          <tr class="text-left text-xs text-muted uppercase tracking-wider">
+            <th class="px-6 py-3 font-semibold">Hora</th>
+            <th class="px-6 py-3 font-semibold">Paciente</th>
+            <th class="px-6 py-3 font-semibold">Apellido</th>
+            <th class="px-6 py-3 font-semibold">Servicio</th>
+            <th class="px-6 py-3 font-semibold">Motivo</th>
+            <th class="px-6 py-3 font-semibold">Estado</th>
+            <th class="px-6 py-3 font-semibold text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-line">
+          {citas.map((c) => (
+            <tr class="hover:bg-line-soft/30 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-semibold text-ink tabular-nums">{String(c.hora_inicio).slice(0, 5)}</div>
+                <div class="text-xs text-muted">a {String(c.hora_fin).slice(0, 5)}</div>
+              </td>
+              <td class="px-6 py-4 font-medium text-ink">{c.paciente_nombre}</td>
+              <td class="px-6 py-4 text-ink-2">{c.paciente_apellido}</td>
+              <td class="px-6 py-4"><span class="text-sm text-ink-2">{c.tipo_servicio}</span></td>
+              <td class="px-6 py-4 text-sm text-muted max-w-[200px] truncate">{c.motivo}</td>
+              <td class="px-6 py-4">
+                <span class={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                  c.estado === "ATENDIDA" ? "bg-success-soft text-success" :
+                  c.estado === "CANCELADA" ? "bg-danger-soft text-danger" :
+                  c.estado === "EN_CURSO" ? "bg-warning-soft text-warning" :
+                  c.estado === "CONFIRMADA" ? "bg-info-soft text-info" :
+                  "bg-brand-50 text-brand-700"
+                }`} style={c.estado === "PROGRAMADA" ? "background:#e8ebf3;color:var(--color-navy)" : undefined}>
+                  <span class={`w-1.5 h-1.5 rounded-full ${
+                    c.estado === "ATENDIDA" ? "bg-success" :
+                    c.estado === "CANCELADA" ? "bg-danger" :
+                    c.estado === "EN_CURSO" ? "bg-warning" :
+                    c.estado === "CONFIRMADA" ? "bg-info" :
+                    "bg-brand-500"
+                  }`} style={c.estado === "PROGRAMADA" ? "background:#0f1d3d" : undefined}></span>
+                  {c.estado.replace("_", " ")}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right whitespace-nowrap">
+                {(c.estado === "PROGRAMADA" || c.estado === "CONFIRMADA" || c.estado === "NO_ASISTIO") && (
+                  <a href={`/consultas/${c.id}`} class="text-sm font-medium text-brand-600 hover:text-brand-700" style="color:#1a2c54">Atender →</a>
+                )}
+                {c.estado === "EN_CURSO" && (
+                  <a href={`/consultas/${c.id}`} class="text-sm font-medium text-warning hover:text-warning">Continuar →</a>
+                )}
+                {c.estado === "ATENDIDA" && <span class="text-sm text-muted">—</span>}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </div>
+</Layout>

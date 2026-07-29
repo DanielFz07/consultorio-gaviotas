@@ -1,0 +1,72 @@
+---
+import { getApiUrl } from "../../lib/api";
+import Layout from "../../layouts/Layout.astro";
+
+const token = Astro.cookies.get("consultorio-gaviotas_token")?.value ?? "";
+const API_URL = getApiUrl();
+
+let error: string | null = null;
+if (Astro.request.method === "POST") {
+  const f = await Astro.request.formData();
+  const body = {
+    codigo: f.get("codigo")?.toString() || null,
+    nombre: f.get("nombre")?.toString() ?? "",
+    descripcion: f.get("descripcion")?.toString() || null,
+    precio: Number(f.get("precio") ?? 0),
+    duracionMinutos: Number(f.get("duracionMinutos") ?? 30),
+  };
+  const res = await fetch(`${API_URL}/api/servicios`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+  if (res.ok) {
+    const data = (await res.json()) as { id: number };
+    return Astro.redirect(`/servicios/${data.id}`);
+  }
+  const errData = (await res.json().catch(() => ({ message: "Error" }))) as { message: string };
+  error = errData.message ?? "Error al crear";
+}
+---
+<Layout title="Nuevo servicio">
+  <a href="/servicios" class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink mb-4 transition-colors">
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    Volver a servicios
+  </a>
+
+  <div class="mb-6">
+    <h1 class="font-display text-3xl font-bold text-ink">Nuevo servicio</h1>
+    <p class="text-muted mt-1">Agrega un servicio al catálogo. Aparecerá disponible en las consultas.</p>
+  </div>
+
+  {error && <div class="mb-4 p-3.5 rounded-xl bg-danger-soft border border-danger/20 text-danger text-sm">{error}</div>}
+
+  <form method="POST" class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] p-8 max-w-2xl space-y-4">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="codigo">Código</label>
+        <input id="codigo" name="codigo" class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all font-mono" placeholder="CONS-XXX" />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="duracionMinutos">Duración (minutos) <span class="text-danger">*</span></label>
+        <input id="duracionMinutos" name="duracionMinutos" type="number" min="1" value="30" required class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all font-mono" />
+      </div>
+    </div>
+    <div>
+      <label class="block text-sm font-semibold text-ink mb-1.5" for="nombre">Nombre <span class="text-danger">*</span></label>
+      <input id="nombre" name="nombre" required class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" placeholder="Consulta general" />
+    </div>
+    <div>
+      <label class="block text-sm font-semibold text-ink mb-1.5" for="descripcion">Descripción</label>
+      <textarea id="descripcion" name="descripcion" rows="2" class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all resize-none" placeholder="Evaluación clínica estándar"></textarea>
+    </div>
+    <div>
+      <label class="block text-sm font-semibold text-ink mb-1.5" for="precio">Precio <span class="text-danger">*</span></label>
+      <input id="precio" name="precio" type="number" step="0.01" min="0" required class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all font-mono" placeholder="0.00" />
+    </div>
+    <div class="flex items-center gap-3 pt-2">
+      <button type="submit" class="btn btn-primary">Guardar servicio</button>
+      <a href="/servicios" class="btn btn-ghost">Cancelar</a>
+    </div>
+  </form>
+</Layout>

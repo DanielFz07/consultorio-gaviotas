@@ -1,0 +1,5049 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>VetSys - Sistema Integrado de Gestión Veterinaria</title>
+<style>
+@page { size: A4; margin: 2cm 2cm 2.5cm 2cm; @bottom-center { content: counter(page) " de " counter(pages); font-family: 'Helvetica', sans-serif; font-size: 9pt; color: #666; } @top-right { content: "VetSys - Documentación RUP"; font-family: 'Helvetica', sans-serif; font-size: 8pt; color: #999; } }
+@page :first { @top-right { content: ""; } @bottom-center { content: ""; } }
+body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 10.5pt; line-height: 1.45; color: #1a1a1a; }
+.cover { page-break-after: always; text-align: center; padding-top: 5cm; }
+.cover h1 { font-size: 36pt; color: #0d9488; margin-bottom: 0.2cm; font-weight: 700; letter-spacing: -0.02em; }
+.cover h2 { font-size: 14pt; color: #444; font-weight: 400; margin-top: 0; margin-bottom: 2cm; }
+.cover .meta { margin-top: 4cm; color: #666; font-size: 10pt; }
+.cover .meta div { margin: 0.3cm 0; }
+.cover .footer-info { margin-top: 6cm; font-size: 9pt; color: #888; border-top: 2px solid #0d9488; padding-top: 0.5cm; max-width: 60%; margin-left: auto; margin-right: auto; }
+.section-title { page-break-before: always; font-size: 22pt; color: #0d9488; border-bottom: 3px solid #0d9488; padding-bottom: 0.3cm; margin-top: 1cm; margin-bottom: 1cm; font-weight: 700; letter-spacing: -0.01em; }
+.subsection-title { page-break-before: always; font-size: 16pt; color: #115e59; border-bottom: 1px solid #cbd5e0; padding-bottom: 0.2cm; margin-top: 1.5cm; margin-bottom: 0.6cm; font-weight: 600; }
+.doc-title { font-size: 18pt; color: #0a0a0a; margin-top: 0.5cm; margin-bottom: 0.5cm; font-weight: 700; border-left: 4px solid #0d9488; padding-left: 0.4cm; }
+.doc-meta { font-size: 9pt; color: #777; margin-bottom: 0.8cm; }
+.doc-content { line-height: 1.55; }
+.doc-content h1 { font-size: 18pt; color: #0a0a0a; border-bottom: 2px solid #0d9488; padding-bottom: 0.2cm; margin-top: 1.5cm; }
+.doc-content h2 { font-size: 14pt; color: #115e59; margin-top: 1.3cm; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.15cm; }
+.doc-content h3 { font-size: 12pt; color: #1f2937; margin-top: 1.1cm; }
+.doc-content h4 { font-size: 11pt; color: #374151; margin-top: 1cm; }
+.doc-content p { margin: 0.5em 0; }
+.doc-content ul, .doc-content ol { margin: 0.5em 0; padding-left: 1.5em; }
+.doc-content li { margin: 0.2em 0; }
+.doc-content code { background: #f4f1e4; padding: 0.1em 0.3em; border-radius: 2px; font-family: 'Courier New', monospace; font-size: 9pt; color: #7c1818; }
+.doc-content pre { background: #fafaf6; border: 1px solid #d4cfb8; border-radius: 4px; padding: 0.6em 0.8em; overflow-x: auto; font-size: 8.5pt; line-height: 1.35; }
+.doc-content pre code { background: transparent; padding: 0; color: #1a1a1a; }
+.doc-content blockquote { border-left: 3px solid #0d9488; padding-left: 1em; color: #4b5563; font-style: italic; }
+.doc-content table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 9pt; }
+.doc-content th, .doc-content td { border: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; }
+.doc-content th { background: #f4f1e4; font-weight: 600; color: #0a0a0a; }
+.doc-content tr:nth-child(even) { background: #fafaf6; }
+.doc-content a { color: #0d9488; text-decoration: none; }
+.doc-content hr { border: 0; border-top: 1px solid #d4cfb8; margin: 1.5em 0; }
+.toc { page-break-after: always; }
+.toc h1 { font-size: 22pt; color: #0d9488; border-bottom: 3px solid #0d9488; padding-bottom: 0.3cm; margin-bottom: 1cm; }
+.toc ul { list-style: none; padding-left: 0; }
+.toc li { margin: 0.4em 0; }
+.toc .level-1 { font-weight: 600; color: #0a0a0a; margin-top: 0.8em; font-size: 11pt; }
+.toc .level-2 { padding-left: 1.2em; color: #4b5563; font-size: 10pt; }
+.code-block { background: #1a1a1a; color: #f0f0f0; padding: 0.6em 0.8em; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 8.5pt; line-height: 1.4; white-space: pre-wrap; word-break: break-all; }
+</style>
+</head>
+<body>
+
+
+<div class="cover">
+<h1>VetSys</h1>
+<h2>Sistema Integrado de Gestión Veterinaria</h2>
+<div class="meta">
+  <div><strong>Proyecto Final</strong> — Análisis y Diseño de Sistemas</div>
+  <div>Metodología: <strong>RUP</strong> (Rational Unified Process)</div>
+  <div>Stack: Astro SSR · Bun + Elysia · TypeScript · PostgreSQL 16 · Docker</div>
+</div>
+<div class="footer-info">
+  Documentación técnica completa · 4 fases · 18 artefactos<br/>
+  Generado: 25 de July de 2026
+</div>
+</div>
+
+<div class="toc"><h1>Índice general</h1><ul>
+<li class="level-1">PRODUCTO Y DISEÑO</li>
+<li class="level-2">Product</li>
+<li class="level-2">Design</li>
+<li class="level-1">FASE DE INICIO (Inception)</li>
+<li class="level-2">01 Documento Vision</li>
+<li class="level-2">02 Prototipo Ui Pantallas</li>
+<li class="level-1">FASE DE ELABORACIÓN (Elaboration)</li>
+<li class="level-2">Readme</li>
+<li class="level-2">01 Diagrama Clases</li>
+<li class="level-2">02 Casos Uso</li>
+<li class="level-2">02B Casos Uso Expandidos</li>
+<li class="level-2">03 Er Diagrama</li>
+<li class="level-2">04 Flujo Dia Completo</li>
+<li class="level-2">05 Estados</li>
+<li class="level-2">06 Arquitectura Despliegue</li>
+<li class="level-1">FASE DE CONSTRUCCIÓN (Construction)</li>
+<li class="level-2">Readme</li>
+<li class="level-2">Iteracion 1 Pacientes Citas</li>
+<li class="level-2">Iteracion 2 Consulta Medica</li>
+<li class="level-2">Iteracion 3 Inventario Facturacion</li>
+<li class="level-1">FASE DE TRANSICIÓN (Transition)</li>
+<li class="level-2">Readme</li>
+<li class="level-2">01 Guion Demo</li>
+<li class="level-2">02 Implantacion Docker</li>
+<li class="level-2">03 Procedimiento Migracion</li>
+<li class="level-2">04 Manual Operacion</li>
+<li class="level-2">05 Manual Administrador</li>
+<li class="level-1">PROTOTIPO ARQUITECTÓNICO (código)</li>
+<li class="level-2">Consulta Flow</li>
+</ul></div>
+<div class="section-title">PRODUCTO Y DISEÑO</div>
+<div class="doc-title">Product</div>
+<div class="doc-meta">PRODUCT.md</div>
+<div class="doc-content"><!-- impeccable:product-schema 1 -->
+
+<h2 id="platform">Platform</h2>
+<p>web</p>
+<h2 id="users">Users</h2>
+<p><strong>Primary:</strong> Administrator (control global). Manages users, master catalogs (services, products), configures global parameters, monitors inventory thresholds, and runs end-of-day reconciliation. Optimizes the interface for this role: dense data, full information surface, keyboard-friendly tables, fast filters, batch actions.</p>
+<p><strong>Secondary audiences that must not be blocked by the admin-centric layout:</strong></p>
+<ul>
+<li><strong>Reception (Recepcionista):</strong> operates the front desk, registers owners and pets, schedules/reprograms/cancels appointments, takes payment at checkout. Needs a high-volume, low-friction path for: find owner → register pet → schedule slot → print receipt. Should not be punished for not being the admin; sidebar, color-coding, and shortcuts reflect the same vocabulary.</li>
+<li><strong>Veterinarian (Veterinario):</strong> runs the clinical session. Reads clinical history, opens the consultation, prescribes, attaches lab/imaging files, finalizes the consultation (which emits the invoice). Values legible medical typography and zero-friction access to history, not interface flourishes.</li>
+<li><strong>Cashier (Caja):</strong> role is <code>RECEPCION</code> with payment permission. Reuses the same UI as reception; no separate surface.</li>
+</ul>
+<p><strong>Job-to-be-done (admin, primary):</strong> "I need to know, in under 10 seconds, whether the clinic is operating normally today: appointments attended, revenue captured, products consumed, and stock that needs replenishment before tomorrow."</p>
+<h2 id="product-purpose">Product Purpose</h2>
+<p>VetSys is an integrated management system for small veterinary clinics (typically 1–3 vets, 1–2 front-desk staff). It replaces the manual notebook + spreadsheet + paper invoice triad that small clinics in Latin America still use. The product exists to:</p>
+<ol>
+<li>Eliminate manual calculation errors in invoicing.</li>
+<li>Centralize the pet clinical history so it is never lost or duplicated.</li>
+<li>Keep stock synchronized with prescriptions in real time (every dispensed dose is a stock decrement).</li>
+<li>Reduce no-shows via automated 24-hour reminders.</li>
+<li>Produce operational metrics the clinic never had before (daily revenue, top services, low-stock alerts).</li>
+</ol>
+<p>Success means a clinic can run a full day with the system, lose zero inventory between prescription and billing, and produce a daily report without any hand-tallying.</p>
+<h2 id="positioning">Positioning</h2>
+<p>The mechanism a neighboring product could not truthfully copy: <strong>a single transactional boundary that ties a consultation to its prescriptions to its invoice to its stock decrement</strong>. When the vet presses "Finalize Consultation", a Postgres <code>BEGIN/COMMIT</code> block guarantees that the invoice number, the items, the stock update, and the history entry are written atomically or not at all. No partial state, no "the stock said yes but the invoice didn't print" race condition. This is the core of the product's reliability story and the reason a clinic can trust it more than a spreadsheet.</p>
+<h2 id="operating-context">Operating Context</h2>
+<ul>
+<li><strong>Environment:</strong> physical reception desk, single-screen PC (1920×1080 typical), sometimes a tablet in the consultation room.</li>
+<li><strong>Workflow cadence:</strong> ~8–15 consultations/day, peak in the morning. Each consultation averages 15–20 minutes of clinical time plus 3–5 minutes of system entry.</li>
+<li><strong>Daily ritual:</strong> reception prints the day's appointments at 08:30, vets pull up consultations as patients arrive, cashier closes unpaid invoices at end of day, admin reconciles stock at 19:00.</li>
+<li><strong>Connectivity assumption:</strong> server reachable on the local network; intermittent outages tolerated (queries retry, file uploads resume).</li>
+<li><strong>Documents handled:</strong> lab PDFs, radiograph images (PNG/JPEG/WEBP), printed invoices (PDF export), emailed reminders (SMTP).</li>
+<li><strong>Regulatory light:</strong> no HIPAA-equivalent in the target market, but personal data of pet owners (DNI, email, phone) is treated with restraint. No data leaves the clinic's server without the admin's explicit action.</li>
+</ul>
+<h2 id="capabilities-and-constraints">Capabilities and Constraints</h2>
+<p><strong>Confirmed capabilities:</strong></p>
+<ul>
+<li>CRUD for owners (duenos) and pets (mascotas) with 1:N owner→pets and 1:1 pet→clinical-history.</li>
+<li>Appointment scheduling with slot-uniqueness enforcement per veterinarian.</li>
+<li>Consultation workflow: symptoms, diagnosis, treatment, services, prescriptions, file attachments, finalize.</li>
+<li>Inventory: products with stock, minimum-threshold alerts, atomic decrement on prescription.</li>
+<li>Invoicing: auto-generated on consultation close, sequential correlative numbers, services + products + tax.</li>
+<li>Authentication with JWT + bcrypt, three roles (Admin / Veterinario / Recepción), RBAC enforced server-side.</li>
+<li>Worker process polls every 60s for 24h-appointment reminders and sends via SMTP.</li>
+<li>Backend: Bun + Elysia + TypeScript. Database: PostgreSQL 16. Storage: local volume. Deployment: docker-compose.</li>
+</ul>
+<p><strong>Confirmed technical constraints:</strong></p>
+<ul>
+<li>Backend runs on Linux inside Docker. No Windows-specific paths.</li>
+<li>Database is strictly relational (PostgreSQL 16). No NoSQL.</li>
+<li>Files served from <code>./data/uploads</code> volume; max 10 MB per file; allowed MIME: PNG, JPEG, WEBP, PDF.</li>
+<li>Frontend is Astro SSR with Node adapter; the SSR layer proxies all auth to the backend.</li>
+<li>Tax rate is a single configuration value (<code>TAX_RATE</code> env, default 0.16).</li>
+<li>Sequential invoice numbers via a Postgres <code>SEQUENCE</code>; no manual override.</li>
+</ul>
+<p><strong>Explicitly undecided (do not invent):</strong></p>
+<ul>
+<li>Multi-clinic (chain) tenancy. Current design is single-clinic.</li>
+<li>Native mobile app. The system is responsive but not native.</li>
+<li>Payment gateway integration (cards, transfers). Only cash/manual recording exists.</li>
+<li>SMS provider. Only SMTP email reminders are wired; SMS is a future hook.</li>
+</ul>
+<h2 id="brand-commitments">Brand Commitments</h2>
+<ul>
+<li><strong>Name:</strong> VetSys. Established by the academic project; do not rename or reskin the name.</li>
+<li><strong>Voice:</strong> professional, concise, clinical. No exclamation marks, no emoji in product copy, no marketing language. Empty states say "No hay citas para hoy." not "Uh oh! Nothing here yet!"</li>
+<li><strong>Identity constraint:</strong> the system name "VetSys" and the wordmark in the sidebar must remain on every page that is part of the operator's daily flow.</li>
+<li><strong>No binding aesthetic pinned yet.</strong> Visual world is recorded in DESIGN.md after <code>document</code> runs against the current implementation; <code>polish</code> and later commands will refine it.</li>
+</ul>
+<h2 id="evidence-on-hand">Evidence on Hand</h2>
+<ul>
+<li>The implemented system is itself the evidence: every flow described in the manual-of-operations document is live in the running system.</li>
+<li>The product has no public marketing site, no customer testimonials, no press, no case study. Future work must not fabricate any.</li>
+<li>The visual reference set is empty; the only incumbent truth is the current Astro implementation in <code>apps/frontend/</code>.</li>
+</ul>
+<h2 id="product-principles">Product Principles</h2>
+<ol>
+<li><strong>One transaction, one truth.</strong> A consultation, its prescriptions, its invoice, its stock decrement, and its history entry are inseparable. Never split them.</li>
+<li><strong>The admin sees everything; the role only gates.</strong> The primary user is the admin, so density and completeness outrank decoration; role-based hiding prevents unauthorized actions but does not simplify the admin's view.</li>
+<li><strong>Reversible on paper, irreversible in the system.</strong> A no-show is logged, a cancellation is kept with its reason, an invoice can be annulled (not deleted) — but the system never silently overwrites. Auditability over convenience.</li>
+<li><strong>Boring beats clever at the desk.</strong> Reception processes dozens of customers a day. The interface must be predictable, keyboard-friendly, and free of animations that delay actions.</li>
+<li><strong>Local clinic, real network.</strong> No external SaaS dependency, no telemetry, no third-party tracker. The clinic owns the server, owns the data, owns the backup.</li>
+</ol>
+<h2 id="accessibility-inclusion">Accessibility &amp; Inclusion</h2>
+<ul>
+<li><strong>Target:</strong> WCAG 2.1 Level AA.</li>
+<li>All interactive elements reachable by keyboard; visible focus rings on all focusable elements.</li>
+<li>Text contrast ≥ 4.5:1 against the surface background; non-text UI contrast ≥ 3:1.</li>
+<li>Form fields have associated <code>&lt;label&gt;</code> elements; error messages are programmatically associated via <code>aria-describedby</code> or equivalent.</li>
+<li>Color is never the sole carrier of state (badges pair color with text).</li>
+<li>Tables are responsive on tablet widths (≥ 768px); below that, the operator is expected to use a dedicated device.</li>
+<li>Spanish-language UI. No localization infrastructure (i18n) is in scope for v1; copy is written directly in Spanish.</li>
+</ul></div>
+<div class="doc-title">Design</div>
+<div class="doc-meta">DESIGN.md</div>
+<div class="doc-content"><!-- impeccable:design-schema 1 -->
+
+<h2 id="world">World</h2>
+<p>VetSys is committed to a single visual world: the <strong>ficha clínica unificada</strong> — the unified clinical card. Every screen is one ruled paper sheet, the way a small Latin American clinic has always organized its patient binder. The system is the binder, digitized.</p>
+<p>Three artifacts of the audience's daily life fuse into one form: the <strong>pharmacy cardex</strong> (the ruled stock card with hand-numbered rows and a single color tab), the <strong>historia clínica folder</strong> (the manila file with a patient sticker and stamped entries inside), and the <strong>factura/recibo</strong> (the numbered, ruled, stamped paper with a totals box). The product truth — "one transaction, one truth" — already lives in the database; the visual world makes the same promise felt at the desk.</p>
+<p>The category habit this world refuses: the SaaS "stat cards in a card in a card in a sidebar" template. The replacement: one sheet, one ink, one tab strip, sections separated by hairline rules.</p>
+<h2 id="mode">Mode</h2>
+<p>Operate. Density outranks expression. Every affordance is keyboard-reachable. The visitor's success is the admin's success: know in 10 seconds whether the clinic is operating normally today.</p>
+<h2 id="color-strategy">Color strategy</h2>
+<p>Restrained: warm off-white paper, ink black, one clinical-green accent.</p>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Value</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--paper</code></td>
+<td><code>#fafaf6</code></td>
+<td>Page surface, the "sheet"</td>
+</tr>
+<tr>
+<td><code>--ink</code></td>
+<td><code>#0a0a0a</code></td>
+<td>Body text, primary strokes</td>
+</tr>
+<tr>
+<td><code>--ink-2</code></td>
+<td><code>#3f3f3f</code></td>
+<td>Secondary text (never gray on color)</td>
+</tr>
+<tr>
+<td><code>--rule</code></td>
+<td><code>#d4cfb8</code></td>
+<td>1px hairline rules between sections</td>
+</tr>
+<tr>
+<td><code>--rule-soft</code></td>
+<td><code>#e7e3d3</code></td>
+<td>Table row separators, soft dividers</td>
+</tr>
+<tr>
+<td><code>--tab</code></td>
+<td><code>#9a957e</code></td>
+<td>Inactive tab text</td>
+</tr>
+<tr>
+<td><code>--accent</code></td>
+<td><code>#15803d</code></td>
+<td>Primary actions, focus, "Cobrar"</td>
+</tr>
+<tr>
+<td><code>--accent-soft</code></td>
+<td><code>#dcfce7</code></td>
+<td>Tinted surfaces for "active" states, success badges</td>
+</tr>
+<tr>
+<td><code>--warn</code></td>
+<td><code>#a16207</code></td>
+<td>Stock bajo, atención</td>
+</tr>
+<tr>
+<td><code>--danger</code></td>
+<td><code>#9f1239</code></td>
+<td>Cancelar, errores, anulación</td>
+</tr>
+<tr>
+<td><code>--stamp</code></td>
+<td><code>#7c1818</code></td>
+<td>Stamps, "PAGADA" mark, "ANULADA" mark</td>
+</tr>
+</tbody>
+</table>
+<p>Dark/light is not a default; it is a scene. The clinic desk is under fluorescent daylight, paper in hand, screen on. The page is paper, not terminal.</p>
+<h2 id="typography">Typography</h2>
+<p>The audience reads printed medical forms, stamped receipts, and labels. The system uses two faces, both with full Latin Extended for Spanish:</p>
+<ul>
+<li><strong>IBM Plex Sans</strong> — body, headings, UI labels. 300, 400, 500, 600.</li>
+<li><strong>IBM Plex Mono</strong> — numbers, stock counts, money, codes, IDs, times. 400, 500. Tabular numerals always.</li>
+</ul>
+<p>Display caps at 6rem. Body measure 60–72ch. Tracking floor −0.02em on large display, normal on body. Number columns use tabular-lining figures (Plex Mono is tabular by default).</p>
+<p>Forbidden in the system: Inter, system-default sans, anything that signals "AI-generated dashboard." Plex is not on the training-data default list and was chosen because the audience already sees it on the labels of every pharmacy brand they trust.</p>
+<h2 id="composition">Composition</h2>
+<p>The page is a sheet. Every page has the same four horizontal bands, top to bottom:</p>
+<ol>
+<li><strong>Stamp band</strong> (40px tall): clinic name stamped left, date and user stamped right, like a paper form's printed header. 1px rule below.</li>
+<li><strong>Tab strip</strong> (44px tall): horizontal nav of 5 primary destinations. Tabs are separated by 1px rules, not boxes. Active tab has a 2px bottom rule in <code>--accent</code> and ink text. Inactive tabs are muted. The strip is the navigation; there is no sidebar.</li>
+<li><strong>Sheet body</strong>: 1 card-less ruled paper, max 1200px wide, centered. Sections inside separated by hairline rules. The active page lives in a single column on desktop; on tablet (≥ 768px) some pages split into a 2/3 + 1/3 right rail showing the "active patient file" or relevant context.</li>
+<li><strong>Stamp footer</strong> (28px tall): system name + page + version. 1px rule above.</li>
+</ol>
+<p>No drop shadows. No gradient fills. No border-left &gt; 1px. Cards are forbidden; sections separated by rules only.</p>
+<h2 id="tables">Tables</h2>
+<ul>
+<li>Header row: 11px uppercase, tracked 0.04em, <code>--ink-2</code>, on <code>--paper</code>.</li>
+<li>Body rows: 14px, <code>--ink</code>, 1px <code>--rule-soft</code> between rows, no vertical rules.</li>
+<li>Number columns: right-aligned, IBM Plex Mono, tabular.</li>
+<li>Status column: not color alone — uppercase text + a 2px square swatch in the relevant color, so a colorblind operator still reads the state.</li>
+<li>Row height 40px minimum to support touch and click on tablet.</li>
+<li>No zebra striping. The hairline rule is the separator.</li>
+</ul>
+<h2 id="controls">Controls</h2>
+<ul>
+<li>Buttons: rectangular, 1px <code>--ink</code> border, no border-radius (rounded 2px only). Primary: filled <code>--ink</code>, white text. Secondary: paper background, ink text. Ghost: no border, accent text. Danger: filled <code>--danger</code>. Height 36px. No drop shadow. Hover: invert (paper becomes ink, text becomes paper).</li>
+<li>Inputs: 1px <code>--ink-2</code> border, no radius, paper background. Focus: 2px <code>--accent</code> outer outline. Label above input, 12px uppercase tracked.</li>
+<li>Selects: same. Custom caret drawn with a 1px SVG triangle, not the browser default.</li>
+<li>Form rows: label column 180px, input column fluid, helper text below in 12px.</li>
+<li>Modals: only for destructive confirmations and "log out". Never for routine data entry.</li>
+</ul>
+<h2 id="states">States</h2>
+<ul>
+<li>Hover on rows and buttons: invert within 80ms.</li>
+<li>Focus visible: 2px accent outline, never removed.</li>
+<li>Loading: button text replaced by "…" plus a 1px progress underline, no spinners.</li>
+<li>Empty states: a single hairline-bordered "card-less" block, a single sentence ("No hay citas para hoy."), and one contextual action ("+ Nueva cita"). No illustrations.</li>
+<li>Error: 1px <code>--danger</code> top border on a paper block, monospace code + Spanish message.</li>
+</ul>
+<h2 id="motion">Motion</h2>
+<p>One authored moment, no others. The active tab's 2px bottom rule slides between tabs on route change (200ms, ease-out). That is the only animation in the system. Hover inversions, focus outlines, and form submits are instantaneous. The clinic desk has no patience for entrance animations on every section.</p>
+<h2 id="accessibility">Accessibility</h2>
+<p>WCAG 2.1 AA:</p>
+<ul>
+<li>All text ≥ 4.5:1 on <code>--paper</code>; <code>--ink-2</code> is 9.7:1, safe.</li>
+<li>Focus visible 2px accent outline, never removed.</li>
+<li>All interactive elements reachable by Tab, in reading order.</li>
+<li>Tables have <code>&lt;th scope="col"&gt;</code> headers.</li>
+<li>Status uses text + swatch, never color alone.</li>
+<li>Form errors programmatically associated via <code>aria-describedby</code>.</li>
+</ul>
+<h2 id="forbidden">Forbidden</h2>
+<ul>
+<li>Inter, system-ui as a final answer, or any other "AI dashboard" face.</li>
+<li>Gray text on colored surfaces.</li>
+<li>Drop shadows.</li>
+<li>Border-left or border-right &gt; 1px on cards, callouts, or list items.</li>
+<li>Rounded corners &gt; 2px.</li>
+<li>Hero-metric template (big number + small label + 3 supporting stats + accent).</li>
+<li>Nested cards.</li>
+<li>Gradient text.</li>
+<li>Eyebrow labels above every section heading.</li>
+<li>Animation on hover of every list item.</li>
+</ul>
+<h2 id="tokens-reference-for-the-build">Tokens reference (for the build)</h2>
+<pre><code class="language-css">:root {
+  --paper: #fafaf6;
+  --ink: #0a0a0a;
+  --ink-2: #3f3f3f;
+  --rule: #d4cfb8;
+  --rule-soft: #e7e3d3;
+  --tab: #9a957e;
+  --accent: #15803d;
+  --accent-soft: #dcfce7;
+  --warn: #a16207;
+  --danger: #9f1239;
+  --stamp: #7c1818;
+  --font-sans: &quot;IBM Plex Sans&quot;, system-ui, sans-serif;
+  --font-mono: &quot;IBM Plex Mono&quot;, ui-monospace, monospace;
+}
+</code></pre></div>
+<div class="section-title">FASE DE INICIO (Inception)</div>
+<div class="doc-title">VetSys - Documento de Visión</div>
+<div class="doc-meta">docs/fase-inicio/01-documento-vision.md</div>
+<div class="doc-content"><p><strong>Versión:</strong> 1.0
+<strong>Estado:</strong> Borrador - Fase de Inicio (RUP)
+<strong>Producto:</strong> VetSys - Sistema Integrado de Gestión Veterinaria
+<strong>Metodología:</strong> Proceso Unificado de Rational (RUP)</p>
+<hr />
+<h2 id="1-proposito-del-documento">1. Propósito del Documento</h2>
+<p>Establecer el alcance, los objetivos de negocio y la justificación del proyecto <strong>VetSys</strong>, definiendo el valor que el sistema aportará a la clínica veterinaria objetivo. Este documento sirve como acuerdo entre los <em>stakeholders</em> y el equipo de desarrollo, y como referencia para la toma de decisiones durante las fases de RUP.</p>
+<hr />
+<h2 id="2-contexto-del-negocio">2. Contexto del Negocio</h2>
+<p>La clínica veterinaria opera actualmente con procesos manuales y dispersos:</p>
+<ul>
+<li>Agendas escritas en libretas o planillas sin validación de disponibilidad.</li>
+<li>Historias clínicas de mascotas archivadas en carpetas físicas, sin respaldo digital.</li>
+<li>Control de inventario de medicamentos mediante conteo manual.</li>
+<li>Facturación emitida al final del día con cálculos y consolidaciones manuales.</li>
+<li>Pérdida recurrente de información por daño de soportes, rotación de personal o extravío.</li>
+</ul>
+<p>Estas prácticas generan errores operativos, demoras en la atención, pérdida de ingresos por cobro incorrecto y deterioro en la percepción del cliente.</p>
+<hr />
+<h2 id="3-problemas-a-resolver">3. Problemas a Resolver</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Problema</th>
+<th>Impacto actual</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P-01</td>
+<td>Sobrecitación y choques de horarios en agenda manual</td>
+<td>Cliente espera o se retira sin atención</td>
+</tr>
+<tr>
+<td>P-02</td>
+<td>Historias clínicas dispersas o extraviadas</td>
+<td>Diagnósticos sin contexto histórico</td>
+</tr>
+<tr>
+<td>P-03</td>
+<td>Errores de cálculo en facturación manual</td>
+<td>Pérdida de ingresos, quejas del cliente</td>
+</tr>
+<tr>
+<td>P-04</td>
+<td>Stock de medicamentos sin control en tiempo real</td>
+<td>Venta de productos sin existencia, desabastecimiento</td>
+</tr>
+<tr>
+<td>P-05</td>
+<td>Ausencia de trazabilidad de prescripciones</td>
+<td>Imposible auditar qué se suministró y a qué mascota</td>
+</tr>
+<tr>
+<td>P-06</td>
+<td>Falta de recordatorios automáticos</td>
+<td>Alta tasa de inasistencia a citas programadas</td>
+</tr>
+<tr>
+<td>P-07</td>
+<td>Reportes operativos inexistentes o tardíos</td>
+<td>Decisiones administrativas sin datos</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-oportunidad-de-negocio">4. Oportunidad de Negocio</h2>
+<p>La digitalización integral de la operación clínica permite:</p>
+<ol>
+<li>Reducir tiempo administrativo destinado a tareas repetitivas.</li>
+<li>Aumentar la precisión en el cobro de servicios y productos.</li>
+<li>Mejorar la fidelización del cliente mediante atención más ágil y profesional.</li>
+<li>Generar indicadores operativos (citas atendidas, productos despachados, ingresos por servicio) para la toma de decisiones.</li>
+</ol>
+<hr />
+<h2 id="5-objetivos-del-sistema">5. Objetivos del Sistema</h2>
+<h3 id="51-objetivo-general">5.1 Objetivo General</h3>
+<p>Desarrollar e implantar un sistema de información que automatice las operaciones críticas de la clínica veterinaria (pacientes, citas, consultas, inventario y facturación), mejorando la eficiencia operativa y la calidad de atención al cliente.</p>
+<h3 id="52-objetivos-especificos">5.2 Objetivos Específicos</h3>
+<ul>
+<li><strong>OG-01</strong> - Eliminar los choques de horario mediante un calendario digital con validación de disponibilidad.</li>
+<li><strong>OG-02</strong> - Centralizar el historial clínico de cada mascota asociado a su dueño, con respaldo digital.</li>
+<li><strong>OG-03</strong> - Reducir a cero los errores aritméticos en facturación mediante cálculo automático.</li>
+<li><strong>OG-04</strong> - Mantener actualizado el stock de medicamentos tras cada prescripción en consulta.</li>
+<li><strong>OG-05</strong> - Disminuir la inasistencia mediante recordatorios automáticos por correo electrónico.</li>
+<li><strong>OG-06</strong> - Producir reportes operativos en tiempo real (diarios, semanales, mensuales).</li>
+</ul>
+<hr />
+<h2 id="6-alcance-del-producto">6. Alcance del Producto</h2>
+<h3 id="61-dentro-del-alcance">6.1 Dentro del Alcance</h3>
+<table>
+<thead>
+<tr>
+<th>Módulo</th>
+<th>Funcionalidad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pacientes y Dueños</td>
+<td>CRUD de dueños, CRUD de mascotas, asociación mascota-dueño</td>
+</tr>
+<tr>
+<td>Agenda y Citas</td>
+<td>Programar, reprogramar, cancelar citas; tipos: consulta, vacuna, cirugía</td>
+</tr>
+<tr>
+<td>Consulta Médica</td>
+<td>Síntomas, diagnóstico, tratamiento, prescripción, carga de archivos</td>
+</tr>
+<tr>
+<td>Inventario</td>
+<td>Alta/baja de productos, control de stock, alerta de umbral mínimo</td>
+</tr>
+<tr>
+<td>Facturación</td>
+<td>Generación automática al cerrar consulta; consolidada servicios + productos</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-fuera-del-alcance-fase-inicial">6.2 Fuera del Alcance (Fase Inicial)</h3>
+<ul>
+<li>Integración con pasarelas de pago externas.</li>
+<li>Historia clínica electrónica interoperable con otros sistemas.</li>
+<li>Aplicación móvil nativa.</li>
+<li>Contabilidad general del negocio.</li>
+</ul>
+<hr />
+<h2 id="7-stakeholders">7. Stakeholders</h2>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Interés</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Propietario / Administrador</td>
+<td>Rentabilidad, reportes, control global</td>
+</tr>
+<tr>
+<td>Veterinario</td>
+<td>Historia clínica completa, prescripción rápida</td>
+</tr>
+<tr>
+<td>Recepcionista</td>
+<td>Agenda clara, registro ágil de clientes</td>
+</tr>
+<tr>
+<td>Cliente externo</td>
+<td>Atención rápida, recordatorios, transparencia en cobro</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-ventajas-competitivas-y-valor-de-negocio-roi-operativo">8. Ventajas Competitivas y Valor de Negocio (ROI Operativo)</h2>
+<table>
+<thead>
+<tr>
+<th>Ventaja</th>
+<th>Métrica esperada</th>
+<th>Plazo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Eliminación de errores manuales en facturación</td>
+<td>0% de facturas con cálculo manual al cierre de consulta</td>
+<td>Inmediato</td>
+</tr>
+<tr>
+<td>Reducción de tiempo de agendamiento</td>
+<td>De ~5 min a ~30 seg por cita</td>
+<td>Inmediato</td>
+</tr>
+<tr>
+<td>Disponibilidad de historia clínica</td>
+<td>100% accesible desde búsqueda por mascota</td>
+<td>Semana 1</td>
+</tr>
+<tr>
+<td>Control de inventario en tiempo real</td>
+<td>Stock actualizado al instante tras prescripción</td>
+<td>Inmediato</td>
+</tr>
+<tr>
+<td>Reducción de inasistencias</td>
+<td>Estimación -25% con recordatorios</td>
+<td>Mes 1</td>
+</tr>
+<tr>
+<td>Trazabilidad de prescripciones</td>
+<td>100% de consultas con productos registrados</td>
+<td>Inmediato</td>
+</tr>
+<tr>
+<td>Disponibilidad operativa</td>
+<td>Sistema operativo 99% del horario de la clínica</td>
+<td>Continuo</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-restricciones-iniciales">9. Restricciones Iniciales</h2>
+<ul>
+<li><strong>Infraestructura:</strong> Despliegue obligatorio en entorno Linux mediante Docker.</li>
+<li><strong>Persistencia:</strong> Base de datos relacional estricta (PostgreSQL).</li>
+<li><strong>Backend:</strong> Bun + TypeScript con framework Elysia.</li>
+<li><strong>Frontend:</strong> Astro SSR con API routes para integración.</li>
+<li><strong>Seguridad:</strong> Control de acceso por roles (Administrador, Veterinario, Recepción).</li>
+<li><strong>Académico:</strong> Cumplimiento riguroso de artefactos RUP y lineamientos DSI.</li>
+</ul>
+<hr />
+<h2 id="10-riesgos-iniciales">10. Riesgos Iniciales</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Riesgo</th>
+<th>Mitigación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R-01</td>
+<td>Resistencia al cambio por personal habituado a procesos manuales</td>
+<td>Capacitación + acompañamiento en transición</td>
+</tr>
+<tr>
+<td>R-02</td>
+<td>Dependencia de conectividad a internet</td>
+<td>Diseñar caché local + respaldo offline en formulario</td>
+</tr>
+<tr>
+<td>R-03</td>
+<td>Sizing insuficiente del servidor</td>
+<td>Carga estimada &lt; 100 citas/día, holgura amplia</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="11-glosario">11. Glosario</h2>
+<table>
+<thead>
+<tr>
+<th>Término</th>
+<th>Definición</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cita</td>
+<td>Asignación de un horario para un servicio veterinario a una mascota</td>
+</tr>
+<tr>
+<td>Consulta</td>
+<td>Acto médico veterinario registrado en el sistema</td>
+</tr>
+<tr>
+<td>Mascota</td>
+<td>Paciente animal registrado en el sistema</td>
+</tr>
+<tr>
+<td>Prescripción</td>
+<td>Indicación médica de productos administrados durante la consulta</td>
+</tr>
+<tr>
+<td>Pre-factura</td>
+<td>Documento previo al cierre que agrupa servicios y productos de una consulta</td>
+</tr>
+<tr>
+<td>Stock</td>
+<td>Cantidad disponible de un producto en inventario</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12-aprobaciones">12. Aprobaciones</h2>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Nombre</th>
+<th>Firma</th>
+<th>Fecha</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Product Owner</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Profesor Tutor</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<div class="doc-title">Prototipo UI - Flujo "Agendar Cita"</div>
+<div class="doc-meta">docs/fase-inicio/02-prototipo-ui-pantallas.md</div>
+<div class="doc-content"><p><strong>Fase:</strong> Inicio (RUP)
+<strong>Objetivo:</strong> Wireframe del flujo completo de programación de citas, desde el ingreso al sistema hasta la confirmación y notificación.
+<strong>Herramienta sugerida:</strong> Figma o Balsamiq (prototipo estático, baja fidelidad).
+<strong>Restricción:</strong> Solo el flujo de <em>agendar cita</em>. No incluir aún consulta, inventario ni facturación.</p>
+<hr />
+<h2 id="1-mapa-de-flujo">1. Mapa de Flujo</h2>
+<pre><code>[01 Login] -&gt; [02 Dashboard Recepcion] -&gt; [03 Calendario] -&gt; [04 Nueva Cita (paso 1: Dueño/Mascota)]
+                                                       |
+                                                       +-&gt; [05 Nueva Cita (paso 2: Servicio/Horario)]
+                                                       |
+                                                       +-&gt; [06 Confirmación]
+                                                       |
+                                                       +-&gt; [07 Detalle Cita + Acciones (Reprogramar/Cancelar)]
+                                                       |
+                                                       +-&gt; [08 Notificación enviada al cliente]
+</code></pre>
+<hr />
+<h2 id="2-listado-de-pantallas">2. Listado de Pantallas</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Pantalla</th>
+<th>Propósito</th>
+<th>Elementos clave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td><strong>Inicio de sesión</strong></td>
+<td>Autenticar al usuario con sus credenciales</td>
+<td>Logo VetSys, campos usuario y contraseña, botón "Ingresar", enlace "Recuperar contraseña", mensaje de error si falla</td>
+</tr>
+<tr>
+<td>02</td>
+<td><strong>Dashboard Recepción</strong></td>
+<td>Punto de entrada operativo del recepcionista</td>
+<td>Resumen del día (citas agendadas, próximas), accesos rápidos: "Agendar cita", "Buscar dueño", botón de logout, branding superior</td>
+</tr>
+<tr>
+<td>03</td>
+<td><strong>Calendario de citas</strong></td>
+<td>Visualizar disponibilidad y selección de día/hora</td>
+<td>Vista semanal/diaria, slots por veterinario, indicador de ocupación, filtros (tipo de servicio, veterinario), botón flotante "+ Nueva cita"</td>
+</tr>
+<tr>
+<td>04</td>
+<td><strong>Nueva Cita - Paso 1: Dueño y Mascota</strong></td>
+<td>Identificar paciente para la cita</td>
+<td>Buscador de dueños por nombre/cedula/DNI, listado de mascotas asociadas, opción "+ Registrar nuevo dueño", botón "Continuar"</td>
+</tr>
+<tr>
+<td>05</td>
+<td><strong>Nueva Cita - Paso 2: Servicio, Fecha y Hora</strong></td>
+<td>Definir motivo, profesional y horario</td>
+<td>Selector de tipo de servicio (consulta / vacuna / cirugía), selector de veterinario, selector de fecha, slots de hora disponibles (se deshabilitan los ocupados), campo "Motivo de la visita", botón "Agendar"</td>
+</tr>
+<tr>
+<td>06</td>
+<td><strong>Confirmación de cita</strong></td>
+<td>Confirmar datos antes de persistir</td>
+<td>Resumen: mascota, dueño, fecha, hora, veterinario, servicio, costo estimado, botones "Confirmar" y "Volver"</td>
+</tr>
+<tr>
+<td>07</td>
+<td><strong>Detalle de cita + Acciones</strong></td>
+<td>Mostrar cita creada y permitir gestión</td>
+<td>Datos completos de la cita, estado (Confirmada / Atendida / Cancelada), botones "Reprogramar" y "Cancelar", historial de cambios</td>
+</tr>
+<tr>
+<td>08</td>
+<td><strong>Vista previa de notificación (cliente)</strong></td>
+<td>Simular el correo/SMS que recibe el cliente</td>
+<td>Plantilla de email/mensaje con datos de la cita, fecha, hora, veterinario, dirección de la clínica, botón "Agregar a calendario (.ics)"</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-reglas-de-diseno-transversal">3. Reglas de Diseño Transversal</h2>
+<ul>
+<li><strong>Roles visibles en navegación superior:</strong> el avatar y nombre del usuario debe mostrar el rol activo (Recepción / Veterinario / Administrador).</li>
+<li><strong>Acciones sensibles bloqueadas por rol:</strong> un recepcionista no debe ver botones del módulo Consulta ni Inventario.</li>
+<li><strong>Mensajería de error consistente:</strong> formato <code>Icono + Título + Acción sugerida</code>.</li>
+<li><strong>Confirmaciones destructivas:</strong> Cancelar cita, eliminar registro, etc., requieren modal de confirmación.</li>
+<li><strong>Estados vacíos:</strong> cada listado debe mostrar mensaje amigable si no hay datos, nunca tabla vacía silenciosa.</li>
+</ul>
+<hr />
+<h2 id="4-entregables-esperados-para-el-profesor">4. Entregables Esperados para el Profesor</h2>
+<ol>
+<li>Capturas de las 8 pantallas (estática, no navegables).</li>
+<li>Flujo conectado con flechas indicando transición.</li>
+<li>Notas al margen indicando: campos obligatorios, validaciones, datos cargados automáticamente (no escribir a mano).</li>
+<li>Paleta de colores y tipografía (opcional pero recomendado para coherencia).</li>
+</ol>
+<hr />
+<h2 id="5-lo-que-no-debe-aparecer-aun-en-este-prototipo">5. Lo que NO debe aparecer aún en este prototipo</h2>
+<ul>
+<li>Pantallas de Consulta Médica (síntomas, diagnóstico, prescripción).</li>
+<li>Pantallas de Inventario (altas, bajas, stock).</li>
+<li>Pantallas de Facturación (emisión, detalle, pagos).</li>
+<li>Reportes o estadísticas.</li>
+<li>Configuración avanzada de la clínica.</li>
+</ul>
+<p>Estos módulos se abordarán en iteraciones posteriores (Construcción).</p></div>
+<div class="section-title">FASE DE ELABORACIÓN (Elaboration)</div>
+<div class="doc-title">Fase Elaboración - VetSys</div>
+<div class="doc-meta">docs/fase-elaboracion/README.md</div>
+<div class="doc-content"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Documento</th>
+<th>Contenido UML</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td><a href="./01-diagrama-clases.md">Diagrama de Clases</a></td>
+<td>PlantUML + Mermaid</td>
+</tr>
+<tr>
+<td>02</td>
+<td><a href="./02-casos-uso.md">Casos de Uso</a></td>
+<td>UC general, UC-06 detalle, secuencias</td>
+</tr>
+<tr>
+<td>02b</td>
+<td><a href="./02b-casos-uso-expandidos.md">Casos de Uso Expandidos</a></td>
+<td>UC-03, UC-04, UC-05, UC-07, UC-09</td>
+</tr>
+<tr>
+<td>03</td>
+<td><a href="./03-er-diagrama.md">Diagrama ER</a></td>
+<td>ER derivado del SQL</td>
+</tr>
+<tr>
+<td>04</td>
+<td><a href="./04-flujo-dia-completo.md">Flujo Día Completo</a></td>
+<td>"Llega-Se atiende-Se cobra"</td>
+</tr>
+<tr>
+<td>05</td>
+<td><a href="./05-estados.md">Estados</a></td>
+<td>Cita, Consulta, Factura, Producto, Notificación</td>
+</tr>
+<tr>
+<td>06</td>
+<td><a href="./06-arquitectura-despliegue.md">Arquitectura + Despliegue</a></td>
+<td>Componentes, Docker, Red</td>
+</tr>
+</tbody>
+</table>
+<h2 id="otros-entregables-dsi">Otros entregables DSI</h2>
+<ul>
+<li><a href="../dsi/01-catalogo-excepciones.md">Catálogo de Excepciones</a></li>
+<li><a href="../dsi/02-requisitos-operacion.md">Requisitos Operación</a></li>
+<li><a href="../dsi/03-seguridad-roles.md">Seguridad y Roles</a></li>
+</ul>
+<h2 id="prototipo-arquitectonico-codigo">Prototipo Arquitectónico (código)</h2>
+<ul>
+<li><a href="../../apps/backend/src/prototype/consulta-flow.ts">apps/backend/src/prototype/consulta-flow.ts</a></li>
+</ul></div>
+<div class="doc-title">Diagrama de Clases - VetSys</div>
+<div class="doc-meta">docs/fase-elaboracion/01-diagrama-clases.md</div>
+<div class="doc-content"><p><strong>Fase:</strong> Elaboración (RUP)
+<strong>Notación principal:</strong> PlantUML (render via plugin Obsidian)
+<strong>Apéndice visual:</strong> Mermaid (nativo Obsidian)</p>
+<hr />
+<h2 id="1-plantuml-referencia-oficial-uml-25">1. PlantUML (referencia oficial UML 2.5)</h2>
+<pre><code class="language-plantuml">@startuml
+class Dueno {
+  +id: number
+  +dni: string
+  +nombre: string
+  +apellido: string
+  +telefono: string
+  +email: string
+  +direccion: string
+  +activo: boolean
+  +createdAt: Date
+  +updatedAt: Date
+}
+
+class Mascota {
+  +id: number
+  +nombre: string
+  +especie: string
+  +raza: string
+  +fechaNacimiento: Date
+  +sexo: string
+  +pesoKg: decimal
+  +microchip: string
+  +observaciones: text
+  +createdAt: Date
+}
+
+class HistorialClinico {
+  +id: number
+  +fechaApertura: Date
+  +notasGenerales: text
+  +cerrado: boolean
+}
+
+class EntradaHistorial {
+  +id: number
+  +fecha: Date
+  +tipo: string
+  +descripcion: text
+  +autorId: number
+}
+
+class Cita {
+  +id: number
+  +fecha: Date
+  +horaInicio: time
+  +horaFin: time
+  +tipoServicio: string
+  +motivo: text
+  +estado: string
+  +createdAt: Date
+}
+
+class Consulta {
+  +id: number
+  +sintomas: text
+  +diagnostico: text
+  +tratamiento: text
+  +observaciones: text
+  +fechaHora: timestamp
+}
+
+class Prescripcion {
+  +id: number
+  +cantidad: number
+  +dosis: string
+  +frecuencia: string
+  +duracion: string
+}
+
+class Producto {
+  +id: number
+  +nombre: string
+  +descripcion: text
+  +unidad: string
+  +stockActual: number
+  +stockMinimo: number
+  +precioVenta: decimal
+  +activo: boolean
+}
+
+class Servicio {
+  +id: number
+  +nombre: string
+  +descripcion: text
+  +precio: decimal
+  +duracionMinutos: number
+  +activo: boolean
+}
+
+class ConsultaServicio {
+  +id: number
+  +precioCobrado: decimal
+}
+
+class Factura {
+  +id: number
+  +numero: string
+  +fechaEmision: timestamp
+  +subtotal: decimal
+  +impuestos: decimal
+  +total: decimal
+  +estado: string
+}
+
+class ItemFactura {
+  +id: number
+  +tipo: string
+  +descripcion: string
+  +cantidad: decimal
+  +precioUnitario: decimal
+  +subtotal: decimal
+}
+
+class Archivo {
+  +id: number
+  +path: string
+  +nombre: string
+  +mime: string
+  +sizeBytes: number
+  +uploadedAt: timestamp
+}
+
+class Usuario {
+  +id: number
+  +username: string
+  +passwordHash: string
+  +rol: string
+  +nombre: string
+  +activo: boolean
+}
+
+class Notificacion {
+  +id: number
+  +canal: string
+  +estado: string
+  +enviadoAt: timestamp
+  +payload: text
+}
+
+' Relaciones con multiplicidad estricta
+Dueno &quot;1&quot; *-- &quot;1..*&quot; Mascota : posee &gt;
+Mascota &quot;1&quot; *-- &quot;1&quot; HistorialClinico : tiene &gt;
+HistorialClinico &quot;1&quot; *-- &quot;1..*&quot; EntradaHistorial : registra &gt;
+Mascota &quot;1&quot; *-- &quot;0..*&quot; Cita : agenda &gt;
+Cita &quot;1&quot; -- &quot;0..1&quot; Consulta : origina &gt;
+Consulta &quot;1&quot; *-- &quot;1..*&quot; Prescripcion : emite &gt;
+Consulta &quot;1&quot; *-- &quot;1..*&quot; ConsultaServicio : incluye &gt;
+Prescripcion &quot;1..*&quot; --&gt; &quot;1&quot; Producto : referencia &gt;
+ConsultaServicio &quot;1..*&quot; --&gt; &quot;1&quot; Servicio : referencia &gt;
+Consulta &quot;1&quot; -- &quot;0..1&quot; Factura : genera &gt;
+Factura &quot;1&quot; *-- &quot;1..*&quot; ItemFactura : contiene &gt;
+Mascota &quot;1&quot; -- &quot;0..*&quot; Archivo : almacena &gt;
+Consulta &quot;1&quot; -- &quot;0..*&quot; Archivo : adjunta &gt;
+Usuario &quot;1&quot; -- &quot;0..*&quot; Cita : atiendeComoVeterinario &gt;
+Usuario &quot;1&quot; -- &quot;0..*&quot; Consulta : firma &gt;
+Cita &quot;1&quot; -- &quot;0..*&quot; Notificacion : dispara &gt;
+
+@enduml
+</code></pre>
+<hr />
+<h2 id="2-mermaid-vista-rapida-en-obsidian-sin-plugin">2. Mermaid (vista rápida en Obsidian sin plugin)</h2>
+<pre><code class="language-mermaid">classDiagram
+class Dueno {
+  +id: number
+  +dni: string
+  +nombre: string
+  +apellido: string
+  +telefono: string
+  +email: string
+  +direccion: string
+  +activo: boolean
+}
+class Mascota {
+  +id: number
+  +nombre: string
+  +especie: string
+  +raza: string
+  +fechaNacimiento: Date
+  +sexo: string
+  +pesoKg: decimal
+  +microchip: string
+}
+class HistorialClinico {
+  +id: number
+  +fechaApertura: Date
+  +notasGenerales: text
+  +cerrado: boolean
+}
+class EntradaHistorial {
+  +id: number
+  +fecha: Date
+  +tipo: string
+  +descripcion: text
+}
+class Cita {
+  +id: number
+  +fecha: Date
+  +horaInicio: time
+  +horaFin: time
+  +tipoServicio: string
+  +motivo: text
+  +estado: string
+}
+class Consulta {
+  +id: number
+  +sintomas: text
+  +diagnostico: text
+  +tratamiento: text
+  +fechaHora: timestamp
+}
+class Prescripcion {
+  +id: number
+  +cantidad: number
+  +dosis: string
+  +frecuencia: string
+  +duracion: string
+}
+class Producto {
+  +id: number
+  +nombre: string
+  +stockActual: number
+  +stockMinimo: number
+  +precioVenta: decimal
+}
+class Servicio {
+  +id: number
+  +nombre: string
+  +precio: decimal
+  +duracionMinutos: number
+}
+class ConsultaServicio {
+  +precioCobrado: decimal
+}
+class Factura {
+  +numero: string
+  +subtotal: decimal
+  +impuestos: decimal
+  +total: decimal
+  +estado: string
+}
+class ItemFactura {
+  +tipo: string
+  +cantidad: decimal
+  +precioUnitario: decimal
+  +subtotal: decimal
+}
+class Archivo {
+  +path: string
+  +mime: string
+  +sizeBytes: number
+}
+class Usuario {
+  +username: string
+  +passwordHash: string
+  +rol: string
+}
+class Notificacion {
+  +canal: string
+  +estado: string
+  +payload: text
+}
+
+Dueno &quot;1&quot; --&gt; &quot;*&quot; Mascota : posee
+Mascota &quot;1&quot; --&gt; &quot;1&quot; HistorialClinico : tiene
+HistorialClinico &quot;1&quot; --&gt; &quot;*&quot; EntradaHistorial
+Mascota &quot;1&quot; --&gt; &quot;*&quot; Cita : agenda
+Cita &quot;1&quot; --&gt; &quot;0..1&quot; Consulta : origina
+Consulta &quot;1&quot; --&gt; &quot;*&quot; Prescripcion
+Consulta &quot;1&quot; --&gt; &quot;*&quot; ConsultaServicio
+Prescripcion &quot;*&quot; --&gt; &quot;1&quot; Producto
+ConsultaServicio &quot;*&quot; --&gt; &quot;1&quot; Servicio
+Consulta &quot;1&quot; --&gt; &quot;0..1&quot; Factura
+Factura &quot;1&quot; --&gt; &quot;*&quot; ItemFactura
+Mascota &quot;1&quot; --&gt; &quot;*&quot; Archivo
+Consulta &quot;1&quot; --&gt; &quot;*&quot; Archivo
+Usuario &quot;1&quot; --&gt; &quot;*&quot; Cita
+Usuario &quot;1&quot; --&gt; &quot;*&quot; Consulta
+Cita &quot;1&quot; --&gt; &quot;*&quot; Notificacion
+</code></pre>
+<hr />
+<h2 id="3-multiplicidad-cardinalidad-explicita">3. Multiplicidad (cardinalidad) explícita</h2>
+<table>
+<thead>
+<tr>
+<th>Relación</th>
+<th>Multiplicidad</th>
+<th>Lectura</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dueño → Mascota</td>
+<td><code>1</code> a <code>1..*</code></td>
+<td>Un dueño posee una o varias mascotas</td>
+</tr>
+<tr>
+<td>Mascota → Historial Clínico</td>
+<td><code>1</code> a <code>1</code></td>
+<td>Cada mascota tiene exactamente un historial clínico</td>
+</tr>
+<tr>
+<td>Historial → Entrada</td>
+<td><code>1</code> a <code>1..*</code></td>
+<td>Un historial registra una o varias entradas a lo largo del tiempo</td>
+</tr>
+<tr>
+<td>Mascota → Cita</td>
+<td><code>1</code> a <code>0..*</code></td>
+<td>Una mascota puede tener ninguna o varias citas</td>
+</tr>
+<tr>
+<td>Cita → Consulta</td>
+<td><code>1</code> a <code>0..1</code></td>
+<td>Una cita origina a lo sumo una consulta</td>
+</tr>
+<tr>
+<td>Consulta → Prescripción</td>
+<td><code>1</code> a <code>1..*</code></td>
+<td>Una consulta puede tener una o varias prescripciones</td>
+</tr>
+<tr>
+<td>Consulta → Servicio</td>
+<td><code>1</code> a <code>1..*</code></td>
+<td>Una consulta puede incluir uno o varios servicios</td>
+</tr>
+<tr>
+<td>Prescripción → Producto</td>
+<td><code>*..1</code> a <code>1</code></td>
+<td>Una prescripción referencia exactamente un producto</td>
+</tr>
+<tr>
+<td>Consulta → Servicio (vía ConsultaServicio)</td>
+<td><code>*..1</code> a <code>1</code></td>
+<td>Asociación N:M controlada con atributos</td>
+</tr>
+<tr>
+<td>Consulta → Factura</td>
+<td><code>1</code> a <code>0..1</code></td>
+<td>Una consulta origina a lo sumo una factura</td>
+</tr>
+<tr>
+<td>Factura → ItemFactura</td>
+<td><code>1</code> a <code>1..*</code></td>
+<td>Una factura contiene uno o varios ítems</td>
+</tr>
+<tr>
+<td>Usuario (rol Vet) → Cita</td>
+<td><code>1</code> a <code>0..*</code></td>
+<td>Un veterinario atiende varias citas</td>
+</tr>
+<tr>
+<td>Usuario (rol Vet) → Consulta</td>
+<td><code>1</code> a <code>0..*</code></td>
+<td>Un veterinario firma varias consultas</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-notas-de-diseno">4. Notas de Diseño</h2>
+<ul>
+<li><strong>Usuario</strong> generaliza los tres roles (Administrador, Veterinario, Recepción). El atributo <code>rol</code> decide permisos vía RBAC.</li>
+<li><strong>HistorialClinico</strong> se modela como entidad independiente 1:1 con Mascota para permitir metadata (fecha apertura, notas generales, estado activo/cerrado). Las <strong>entradas</strong> individuales se almacenan en <code>EntradaHistorial</code>.</li>
+<li><strong>ConsultaServicio</strong> materializa la relación N:M entre Consulta y Servicio, permitiendo guardar el precio histórico por si el servicio cambia de tarifa.</li>
+<li><strong>ItemFactura</strong> cubre tanto servicios como productos consumidos; el campo <code>tipo</code> discrimina (<code>SERVICIO</code> | <code>PRODUCTO</code>).</li>
+<li>Las <strong>recetas/prescripciones</strong> se almacenan explícitamente (no se infieren de ItemFactura) porque requieren datos clínicos (dosis, frecuencia, duración) que no son propios de una factura.</li>
+</ul></div>
+<div class="doc-title">Modelo de Casos de Uso - VetSys</div>
+<div class="doc-meta">docs/fase-elaboracion/02-casos-uso.md</div>
+<div class="doc-content"><p><strong>Fase:</strong> Elaboración (RUP)
+<strong>Notación principal:</strong> PlantUML (plugin Obsidian)
+<strong>Apéndice visual:</strong> Mermaid flowchart (nativo Obsidian)</p>
+<p><strong>Actores:</strong>
+- <strong>Recepcionista</strong> (rol Recepción)
+- <strong>Veterinario</strong> (rol Vet)
+- <strong>Administrador</strong> (rol Admin)
+- <strong>Cliente</strong> (actor secundario, recibe notificaciones)
+- <strong>Sistema</strong> (actor automático: worker de recordatorios, reloj de tiempo)</p>
+<hr />
+<h2 id="1-diagrama-general-plantuml">1. Diagrama General - PlantUML</h2>
+<pre><code class="language-plantuml">@startuml
+left to right direction
+actor Recepcionista
+actor Veterinario
+actor Administrador
+actor Cliente
+actor Sistema
+
+rectangle VetSys {
+  usecase &quot;UC-01 Registrar Dueño&quot; as UC01
+  usecase &quot;UC-02 Registrar Mascota&quot; as UC02
+  usecase &quot;UC-03 Agendar Cita&quot; as UC03
+  usecase &quot;UC-04 Reprogramar Cita&quot; as UC04
+  usecase &quot;UC-05 Cancelar Cita&quot; as UC05
+  usecase &quot;UC-06 Registrar Consulta Médica&quot; as UC06
+  usecase &quot;UC-07 Prescribir Medicamento&quot; as UC07
+  usecase &quot;UC-08 Adjuntar Archivo&quot; as UC08
+  usecase &quot;UC-09 Generar Factura&quot; as UC09
+  usecase &quot;UC-10 Gestionar Inventario&quot; as UC10
+  usecase &quot;UC-11 Gestionar Usuarios&quot; as UC11
+  usecase &quot;UC-12 Consultar Reportes&quot; as UC12
+  usecase &quot;UC-13 Enviar Recordatorio&quot; as UC13
+  usecase &quot;Autenticar Usuario&quot; as UC00
+}
+
+Recepcionista --&gt; UC00
+Recepcionista --&gt; UC01
+Recepcionista --&gt; UC02
+Recepcionista --&gt; UC03
+Recepcionista --&gt; UC04
+Recepcionista --&gt; UC05
+Veterinario --&gt; UC00
+Veterinario --&gt; UC06
+Veterinario --&gt; UC07
+Veterinario --&gt; UC08
+Veterinario --&gt; UC12
+Administrador --&gt; UC00
+Administrador --&gt; UC10
+Administrador --&gt; UC11
+Administrador --&gt; UC12
+Administrador --&gt; UC09
+Sistema --&gt; UC13
+Cliente &lt;-- UC13
+UC06 ..&gt; UC07 : &lt;&lt;include&gt;&gt;
+UC06 ..&gt; UC09 : &lt;&lt;include&gt;&gt;
+UC09 ..&gt; UC10 : &lt;&lt;include&gt;&gt;
+@enduml
+</code></pre>
+<hr />
+<h2 id="2-diagrama-general-mermaid-vista-nativa-obsidian">2. Diagrama General - Mermaid (vista nativa Obsidian)</h2>
+<p>Mermaid no soporta <code>useCaseDiagram</code> formal; se aproxima con <code>flowchart</code>:</p>
+<pre><code class="language-mermaid">flowchart LR
+  R[Recepcionista]
+  V[Veterinario]
+  A[Administrador]
+  S[Sistema]
+  C[Cliente]
+
+  subgraph VetSys
+    UC00((Autenticar))
+    UC01((Registrar Dueño))
+    UC02((Registrar Mascota))
+    UC03((Agendar Cita))
+    UC04((Reprogramar Cita))
+    UC05((Cancelar Cita))
+    UC06((Registrar Consulta))
+    UC07((Prescribir Medicamento))
+    UC08((Adjuntar Archivo))
+    UC09((Generar Factura))
+    UC10((Gestionar Inventario))
+    UC11((Gestionar Usuarios))
+    UC12((Consultar Reportes))
+    UC13((Enviar Recordatorio))
+  end
+
+  R --&gt; UC00
+  R --&gt; UC01
+  R --&gt; UC02
+  R --&gt; UC03
+  R --&gt; UC04
+  R --&gt; UC05
+
+  V --&gt; UC00
+  V --&gt; UC06
+  V --&gt; UC07
+  V --&gt; UC08
+  V --&gt; UC12
+
+  A --&gt; UC00
+  A --&gt; UC09
+  A --&gt; UC10
+  A --&gt; UC11
+  A --&gt; UC12
+
+  S --&gt; UC13
+  UC13 --&gt; C
+</code></pre>
+<hr />
+<h2 id="3-caso-de-uso-critico-uc-06-registrar-consulta-medica">3. Caso de Uso Crítico: <strong>UC-06 Registrar Consulta Médica</strong></h2>
+<p>Este es el caso más complejo por su interacción con prescripción, inventario, facturación y archivos. Se documenta con nivel de detalle <em>expandido</em>.</p>
+<h3 id="31-metadatos">3.1 Metadatos</h3>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID</td>
+<td>UC-06</td>
+</tr>
+<tr>
+<td>Nombre</td>
+<td>Registrar Consulta Médica</td>
+</tr>
+<tr>
+<td>Actor primario</td>
+<td>Veterinario</td>
+</tr>
+<tr>
+<td>Precondiciones</td>
+<td>Veterinario autenticado; cita seleccionada en estado <code>CONFIRMADA</code> o <code>EN_CURSO</code></td>
+</tr>
+<tr>
+<td>Postcondiciones</td>
+<td>Consulta registrada con diagnóstico, prescripciones (si aplica) y factura emitida</td>
+</tr>
+<tr>
+<td>Frecuencia estimada</td>
+<td>8-15 veces al día</td>
+</tr>
+<tr>
+<td>Criticidad</td>
+<td>Alta</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-flujo-principal-exito">3.2 Flujo Principal (Éxito)</h3>
+<table>
+<thead>
+<tr>
+<th>Paso</th>
+<th>Actor</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Veterinario</td>
+<td>Selecciona la cita del día desde el panel de citas programadas</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Sistema</td>
+<td>Muestra datos de la cita + mascota + historial clínico resumido</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Veterinario</td>
+<td>Abre el formulario "Nueva Consulta"</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Sistema</td>
+<td>Despliega campos: síntomas, diagnóstico, tratamiento, observaciones</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Veterinario</td>
+<td>Ingresa síntomas observados</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Veterinario</td>
+<td>Ingresa diagnóstico</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Veterinario</td>
+<td>Selecciona servicios realizados (ej. consulta general + aplicación de vacuna)</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Sistema</td>
+<td>Registra cada servicio con su precio vigente y lo acumula en pre-factura</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Veterinario</td>
+<td>Opcional: agrega prescripción de uno o varios productos desde inventario</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Sistema</td>
+<td>Para cada producto: valida stock, descuenta cantidad y suma al acumulado de pre-factura</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Veterinario</td>
+<td>Opcional: adjunta archivos (imágenes, resultados de laboratorio)</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Sistema</td>
+<td>Almacena archivos en volumen y registra metadatos</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Veterinario</td>
+<td>Pulsa "Finalizar Consulta"</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Sistema</td>
+<td>Abre transacción SQL, persiste consulta + prescripciones + factura + items</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Sistema</td>
+<td>Genera número de factura correlativo, muestra resumen al veterinario</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Sistema</td>
+<td>Cambia el estado de la cita a <code>ATENDIDA</code> y de la factura a <code>EMITIDA</code></td>
+</tr>
+<tr>
+<td>17</td>
+<td>Sistema</td>
+<td>Registra entradas en el historial clínico de la mascota</td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-diagrama-de-secuencia-plantuml">3.3 Diagrama de Secuencia - PlantUML</h3>
+<pre><code class="language-plantuml">@startuml
+actor Veterinario
+participant &quot;Astro UI&quot; as UI
+participant &quot;Elysia API&quot; as API
+database &quot;PostgreSQL&quot; as DB
+participant &quot;Worker SMTP&quot; as W
+
+Veterinario -&gt; UI: 1. Selecciona cita
+UI -&gt; API: GET /api/citas/:id
+API -&gt; DB: SELECT cita+mascota+historial
+DB --&gt; API: datos
+API --&gt; UI: 200 OK
+
+Veterinario -&gt; UI: 2. Abre &quot;Nueva Consulta&quot;
+UI -&gt; API: POST /api/citas/:id/consulta (draft)
+API -&gt; DB: INSERT consulta
+DB --&gt; API: id
+API --&gt; UI: 201 consultaId
+
+loop por cada servicio
+  Veterinario -&gt; UI: Selecciona servicio
+  UI -&gt; API: POST /api/consultas/:id/servicios
+  API -&gt; DB: SELECT precio + INSERT consulta_servicio
+end
+
+loop por cada prescripción
+  Veterinario -&gt; UI: Selecciona producto + cantidad
+  UI -&gt; API: POST /api/consultas/:id/prescripciones
+  API -&gt; DB: SELECT producto FOR UPDATE
+  API -&gt; DB: UPDATE stock_actual -= cant
+  API -&gt; DB: INSERT prescripcion
+  DB --&gt; API: OK o EX-011
+end
+
+opt Adjuntar archivo
+  Veterinario -&gt; UI: Sube archivo
+  UI -&gt; API: POST /api/consultas/:id/archivos
+  API -&gt; API: escribe ./data/uploads
+  API -&gt; DB: INSERT archivo
+end
+
+Veterinario -&gt; UI: Pulsa &quot;Finalizar Consulta&quot;
+UI -&gt; API: POST /api/consultas/:id/finalizar
+API -&gt; DB: BEGIN TRANSACTION
+API -&gt; DB: factura + items
+API -&gt; DB: UPDATE cita estado=ATENDIDA
+API -&gt; DB: INSERT entrada_historial
+API -&gt; DB: COMMIT
+API --&gt; UI: { consulta, factura }
+API -&gt; W: enqueue recordatorio si próxima cita
+@enduml
+</code></pre>
+<h3 id="34-diagrama-de-secuencia-mermaid">3.4 Diagrama de Secuencia - Mermaid</h3>
+<pre><code class="language-mermaid">sequenceDiagram
+  participant V as Veterinario
+  participant UI as Astro UI
+  participant API as Elysia API
+  participant DB as PostgreSQL
+
+  V-&gt;&gt;UI: Selecciona cita
+  UI-&gt;&gt;API: GET /api/citas/:id
+  API-&gt;&gt;DB: SELECT cita+mascota
+  DB--&gt;&gt;API: datos
+  API--&gt;&gt;UI: 200 OK
+
+  V-&gt;&gt;UI: Inicia consulta
+  UI-&gt;&gt;API: POST /api/citas/:id/consulta
+  API-&gt;&gt;DB: INSERT consulta
+  DB--&gt;&gt;API: consultaId
+  API--&gt;&gt;UI: 201
+
+  loop Servicios
+    V-&gt;&gt;UI: + Servicio
+    UI-&gt;&gt;API: POST /api/consultas/:id/servicios
+    API-&gt;&gt;DB: INSERT consulta_servicio
+  end
+
+  loop Prescripciones
+    V-&gt;&gt;UI: + Producto + cantidad
+    UI-&gt;&gt;API: POST /api/consultas/:id/prescripciones
+    API-&gt;&gt;DB: SELECT producto FOR UPDATE
+    alt Stock suficiente
+      API-&gt;&gt;DB: UPDATE stock -= cant
+      API-&gt;&gt;DB: INSERT prescripcion
+    else Stock insuficiente
+      DB--&gt;&gt;API: EX-011
+      API--&gt;&gt;UI: 409 conflicto
+    end
+  end
+
+  V-&gt;&gt;UI: Finalizar consulta
+  UI-&gt;&gt;API: POST /api/consultas/:id/finalizar
+  API-&gt;&gt;DB: BEGIN TRANSACTION
+  API-&gt;&gt;DB: INSERT factura + items
+  API-&gt;&gt;DB: UPDATE cita = ATENDIDA
+  API-&gt;&gt;DB: INSERT entrada_historial
+  API-&gt;&gt;DB: COMMIT
+  DB--&gt;&gt;API: OK
+  API--&gt;&gt;UI: 200 { consulta, factura }
+</code></pre>
+<h3 id="35-flujos-alternativos">3.5 Flujos Alternativos</h3>
+<p><strong>A1 - Stock insuficiente (paso 10):</strong>
+- 10a. Sistema detecta que el stock del producto es menor a la cantidad solicitada.
+- 10b. Muestra alerta indicando: producto, stock disponible, cantidad solicitada.
+- 10c. Veterinario decide: (i) ajustar cantidad al stock disponible, (ii) seleccionar otro producto, (iii) posponer prescripción.
+- 10d. Si acepta (i), continúa con la cantidad ajustada.</p>
+<p><strong>A2 - Cancelar consulta en curso (paso 13):</strong>
+- 13a. Veterinario pulsa "Cancelar".
+- 13b. Sistema requiere confirmación.
+- 13c. Si confirma: cita queda en estado <code>NO_ATENDIDA</code>, no se genera factura, se libera inventario (rollback), se registra motivo en bitácora.</p>
+<p><strong>A3 - Error al adjuntar archivo (paso 11):</strong>
+- 11a. Sistema falla al guardar el archivo (disco lleno, permisos).
+- 11b. Muestra mensaje de error específico del catálogo de excepciones.
+- 11c. Veterinario puede reintentar o continuar sin el archivo (consulta no se bloquea).</p>
+<h3 id="36-reglas-de-negocio">3.6 Reglas de Negocio</h3>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regla</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RN-01</td>
+<td>Una cita solo puede generar una consulta</td>
+</tr>
+<tr>
+<td>RN-02</td>
+<td>Una consulta puede registrar N prescripciones, pero cada prescripción referencia exactamente un producto</td>
+</tr>
+<tr>
+<td>RN-03</td>
+<td>El descuento de inventario debe ser atómico (transacción); si falla algo, se hace rollback completo</td>
+</tr>
+<tr>
+<td>RN-04</td>
+<td>La factura no se puede eliminar una vez emitida; solo anular (requiere rol Administrador)</td>
+</tr>
+<tr>
+<td>RN-05</td>
+<td>El historial clínico de la mascota se actualiza de forma automática al cerrar la consulta</td>
+</tr>
+<tr>
+<td>RN-06</td>
+<td>El número de factura es correlativo y único por clínica, sin reinicios</td>
+</tr>
+<tr>
+<td>RN-07</td>
+<td>La sesión del veterinario debe estar activa para acceder al flujo</td>
+</tr>
+</tbody>
+</table>
+<h3 id="37-casos-de-uso-incluidos-extendidos">3.7 Casos de Uso Incluidos / Extendidos</h3>
+<ul>
+<li><code>&lt;&lt;include&gt;&gt;</code> UC-07 Prescribir Medicamento (paso 9-10)</li>
+<li><code>&lt;&lt;include&gt;&gt;</code> UC-08 Adjuntar Archivo (paso 11)</li>
+<li><code>&lt;&lt;include&gt;&gt;</code> UC-09 Generar Factura (paso 14-16)</li>
+<li><code>&lt;&lt;extend&gt;&gt;</code> A1 Stock Insuficiente (paso 10)</li>
+</ul>
+<h3 id="38-especificacion-de-interfaces-extracto-para-elysia">3.8 Especificación de Interfaces (extracto para Elysia)</h3>
+<pre><code>POST   /api/citas/:id/consulta
+       Body: { sintomas, diagnostico, tratamiento, observaciones }
+       Roles: veterinario
+       Crea consulta en estado &quot;borrador&quot; vinculada a la cita
+
+POST   /api/consultas/:id/prescripciones
+       Body: { productoId, cantidad, dosis, frecuencia, duracion }
+       Roles: veterinario
+       Descuenta stock atómicamente y suma al acumulado
+
+POST   /api/consultas/:id/servicios
+       Body: { servicioId, cantidad }
+       Roles: veterinario
+       Registra servicio en consulta con precio vigente
+
+POST   /api/consultas/:id/archivos
+       Body: multipart/form-data
+       Roles: veterinario
+       Almacena archivo en ./data/uploads y registra metadatos
+
+POST   /api/consultas/:id/finalizar
+       Roles: veterinario
+       Cierra transacción: persiste consulta, prescripciones, factura, items, actualiza historial
+       Respuesta: { consulta, factura, items }
+</code></pre></div>
+<div class="doc-title">Casos de Uso Expandidos - VetSys</div>
+<div class="doc-meta">docs/fase-elaboracion/02b-casos-uso-expandidos.md</div>
+<div class="doc-content"><p><strong>Fase:</strong> Elaboración
+<strong>Complemento de:</strong> <code>02-casos-uso.md</code>
+<strong>Notación:</strong> PlantUML (principal) + Mermaid (apéndice Obsidian)</p>
+<p>Este documento amplía los casos de uso críticos al mismo nivel de detalle que UC-06. Cada uno cubre flujo principal, alternativos y reglas de negocio.</p>
+<hr />
+<h2 id="uc-03-agendar-cita">UC-03 Agendar Cita</h2>
+<h3 id="metadatos">Metadatos</h3>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Actor primario</td>
+<td>Recepción (Recepcionista)</td>
+</tr>
+<tr>
+<td>Precondición</td>
+<td>Mascota registrada y activo en el sistema</td>
+</tr>
+<tr>
+<td>Postcondición</td>
+<td>Cita creada en estado <code>PROGRAMADA</code> con slot reservado</td>
+</tr>
+<tr>
+<td>Criticidad</td>
+<td>Alta - entrada del flujo diario</td>
+</tr>
+</tbody>
+</table>
+<h3 id="flujo-principal">Flujo Principal</h3>
+<table>
+<thead>
+<tr>
+<th>Paso</th>
+<th>Actor</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Recepción</td>
+<td>Selecciona fecha y veterinario</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Sistema</td>
+<td>Muestra slots disponibles (sin colisión)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Recepción</td>
+<td>Selecciona mascota del dueño (búsqueda por DNI/nombre)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Sistema</td>
+<td>Muestra historial mínimo: especie, edad, alertas (ej. vacunas vencidas)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Recepción</td>
+<td>Elige tipo de servicio (consulta/vacuna/cirugía/control)</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Recepción</td>
+<td>Elige hora (slot) dentro de disponibilidad</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Recepción</td>
+<td>Ingresa motivo de visita</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Sistema</td>
+<td>Valida conflicto (uq_cita_slot_vet)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Sistema</td>
+<td>Persiste cita en estado <code>PROGRAMADA</code></td>
+</tr>
+<tr>
+<td>10</td>
+<td>Sistema</td>
+<td>Agenda recordatorio 24h antes (worker)</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Sistema</td>
+<td>Confirma al usuario y muestra resumen</td>
+</tr>
+</tbody>
+</table>
+<h3 id="diagrama-de-actividad-plantuml">Diagrama de Actividad - PlantUML</h3>
+<pre><code class="language-plantuml">@startuml
+| Recep |
+start
+:Selecciona fecha y veterinario;
+|Sistema|
+:Obtiene slots libres;
+|Recep|
+:Busca mascota por DNI/nombre;
+if (Mascota existe?) then (sí)
+  :Carga datos mascota;
+else (no)
+  :Redirige a UC-02 Registrar Mascota;
+  stop
+endif
+:Selecciona tipo servicio;
+:Selecciona hora (slot);
+:Ingresa motivo;
+|Sistema|
+:Valida colisión en slot;
+if (slot libre?) then (sí)
+  :INSERT cita (PROGRAMADA);
+  :Agenda recordatorio (24h antes);
+else (no)
+  :Muestra error EX-009;
+  :Ofrece slots alternativos;
+  stop
+endif
+:Confirma al usuario;
+stop
+@enduml
+</code></pre>
+<h3 id="mermaid-apendice">Mermaid (Apéndice)</h3>
+<pre><code class="language-mermaid">flowchart TD
+  R([Recep]) --&gt; A[Selecciona fecha+veterinario]
+  A --&gt; S1{Sistema: slots libres}
+  S1 --&gt; B[Recep: busca mascota DNI]
+  B --&gt; Q{Existe?}
+  Q -- no --&gt; C[Ir a UC-02]
+  Q -- sí --&gt; D[Carga datos mascota]
+  D --&gt; E[Tipo servicio]
+  E --&gt; F[Selecciona slot]
+  F --&gt; G[Ingresa motivo]
+  G --&gt; V{Colisión?}
+  V -- sí --&gt; X[EX-009 + alternativos]
+  X --&gt; F
+  V -- no --&gt; H[INSERT cita PROGRAMADA]
+  H --&gt; I[Agenda recordatorio 24h]
+  I --&gt; Z[Confirma]
+</code></pre>
+<h3 id="reglas">Reglas</h3>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regla</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RN-08</td>
+<td>Un slot no puede tener dos citas del mismo veterinario simultáneamente</td>
+</tr>
+<tr>
+<td>RN-09</td>
+<td>Toda cita requiere motivo (mínimo 5 caracteres)</td>
+</tr>
+<tr>
+<td>RN-10</td>
+<td>Citas en estado CANCELADA o NO_ASISTIO se mantienen por auditoría, no se eliminan</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="uc-04-reprogramar-cita">UC-04 Reprogramar Cita</h2>
+<h3 id="metadatos_1">Metadatos</h3>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Actor primario</td>
+<td>Recepción o Veterinario</td>
+</tr>
+<tr>
+<td>Precondición</td>
+<td>Cita en estado <code>PROGRAMADA</code>, <code>CONFIRMADA</code> o <code>EN_CURSO</code></td>
+</tr>
+<tr>
+<td>Postcondición</td>
+<td>Cita con nueva fecha/hora y registro de cambio en historial</td>
+</tr>
+</tbody>
+</table>
+<h3 id="flujo-principal_1">Flujo Principal</h3>
+<table>
+<thead>
+<tr>
+<th>Paso</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Usuario abre cita existente</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Pulsa "Reprogramar"</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Sistema ofrece nuevo calendario</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Usuario elige nueva fecha/hora y motivo de reprogramación</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Sistema valida disponibilidad y conflictos</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Sistema actualiza cita y registra evento en bitácora</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Sistema cancela recordatorio previo y agenda nuevo</td>
+</tr>
+</tbody>
+</table>
+<h3 id="diagrama-de-secuencia-plantuml">Diagrama de Secuencia - PlantUML</h3>
+<pre><code class="language-plantuml">@startuml
+actor Usuario
+participant UI
+participant API
+database DB
+participant Worker
+
+Usuario -&gt; UI: Abre cita
+UI -&gt; API: GET /api/citas/:id
+API -&gt; DB: SELECT cita
+DB --&gt; API: datos
+API --&gt; UI: 200 OK
+Usuario -&gt; UI: Pulsa &quot;Reprogramar&quot;
+UI -&gt; API: PATCH /api/citas/:id {fecha, hora, motivo}
+API -&gt; DB: BEGIN; SELECT FOR UPDATE cita
+API -&gt; DB: validar conflicto nuevo slot
+API -&gt; DB: UPDATE cita (fecha, hora)
+API -&gt; DB: INSERT bitacora_reprogramacion
+API -&gt; DB: COMMIT
+API -&gt; Worker: cancela recordatorio previo
+API -&gt; Worker: agenda nuevo recordatorio
+API --&gt; UI: 200 OK nueva cita
+@enduml
+</code></pre>
+<hr />
+<h2 id="uc-05-cancelar-cita">UC-05 Cancelar Cita</h2>
+<h3 id="metadatos_2">Metadatos</h3>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Actor primario</td>
+<td>Recepción</td>
+</tr>
+<tr>
+<td>Precondición</td>
+<td>Cita no atendida</td>
+</tr>
+<tr>
+<td>Postcondición</td>
+<td>Cita en estado <code>CANCELADA</code>; recordatorio cancelado</td>
+</tr>
+</tbody>
+</table>
+<h3 id="flujo-principal_2">Flujo Principal</h3>
+<table>
+<thead>
+<tr>
+<th>Paso</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Usuario selecciona cita</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Pulsa "Cancelar"</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Sistema exige confirmación + motivo</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Sistema actualiza estado a <code>CANCELADA</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Sistema cancela notificaciones pendientes</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Sistema registra evento</td>
+</tr>
+</tbody>
+</table>
+<h3 id="regla">Regla</h3>
+<ul>
+<li>RN-11: citas en estado <code>ATENDIDA</code> no se pueden cancelar (EX-010).</li>
+</ul>
+<hr />
+<h2 id="uc-07-prescribir-medicamento">UC-07 Prescribir Medicamento</h2>
+<p>(Complemento al flujo principal de UC-06)</p>
+<h3 id="secuencia-plantuml">Secuencia - PlantUML</h3>
+<pre><code class="language-plantuml">@startuml
+actor Vet
+participant UI
+participant API
+database DB
+
+Vet -&gt; UI: Selecciona producto del catálogo
+UI -&gt; API: GET /api/productos/buscar?q=
+API -&gt; DB: SELECT nombre, stock_actual
+DB --&gt; API: resultados
+API --&gt; UI: 200 OK
+Vet -&gt; UI: Indica cantidad, dosis, frecuencia, duración
+UI -&gt; API: POST /api/consultas/:id/prescripciones
+API -&gt; DB: BEGIN; SELECT producto FOR UPDATE
+alt stock_actual &gt;= cantidad
+  API -&gt; DB: UPDATE stock_actual -= cantidad
+  API -&gt; DB: INSERT prescripcion
+  API -&gt; DB: COMMIT
+  API --&gt; UI: 201 OK
+else stock insuficiente
+  API -&gt; DB: ROLLBACK
+  API --&gt; UI: 409 EX-011 con alternativas
+end
+@enduml
+</code></pre>
+<hr />
+<h2 id="uc-09-generar-factura-automatico-al-cerrar-consulta">UC-09 Generar Factura (automático al cerrar consulta)</h2>
+<p>Ver <code>prototype/consulta-flow.ts</code> para la lógica transaccional. La factura se crea dentro del <code>BEGIN/COMMIT</code> al finalizar consulta.</p>
+<h3 id="elementos-incluidos-automaticamente">Elementos incluidos automáticamente</h3>
+<ul>
+<li><strong>Servicios</strong>: cada <code>consulta_servicio</code> con su <code>precio_cobrado</code> congelado.</li>
+<li><strong>Productos</strong>: cada <code>prescripcion</code> con <code>precio_unitario_cobrado</code> congelado.</li>
+<li><strong>Subtotal</strong>: suma de servicios + productos.</li>
+<li><strong>Impuestos</strong>: <code>subtotal * TAX_RATE</code> (configurable por clínica).</li>
+<li><strong>Total</strong>: <code>subtotal + impuestos</code>.</li>
+<li><strong>Número</strong>: <code>F-{año}-{secuencia}</code> desde <code>factura_numero_seq</code>.</li>
+<li><strong>Estado inicial</strong>: <code>EMITIDA</code>.</li>
+</ul>
+<h3 id="acciones-posteriores-posibles">Acciones posteriores posibles</h3>
+<ul>
+<li>Pagar factura (rol Recepción) → estado <code>PAGADA</code>.</li>
+<li>Anular factura (rol Administrador) → estado <code>ANULADA</code>, requiere motivo en bitácora.</li>
+</ul></div>
+<div class="doc-title">Diagrama ER (Modelo Físico) - VetSys</div>
+<div class="doc-meta">docs/fase-elaboracion/03-er-diagrama.md</div>
+<div class="doc-content"><p><strong>Fase:</strong> Elaboración
+<strong>Generado desde:</strong> <code>db/migrations/0001_init.sql</code>
+<strong>Notación:</strong> Mermaid <code>erDiagram</code> (nativo Obsidian)
+<strong>Propósito:</strong> Vista rápida para el profesor sin abrir herramienta UML.</p>
+<hr />
+<pre><code class="language-mermaid">erDiagram
+  USUARIO ||--o{ CITA : atiende
+  USUARIO ||--o{ CONSULTA : firma
+  USUARIO ||--o{ PRESCRIPCION : &quot;autor (no FK directa)&quot;
+
+  DUENO ||--o{ MASCOTA : posee
+  DUENO ||--o{ FACTURA : recibe
+
+  MASCOTA ||--|| HISTORIAL_CLINICO : tiene
+  MASCOTA ||--o{ CITA : agenda
+  MASCOTA ||--o{ CONSULTA : atendida
+  MASCOTA ||--o{ ARCHIVO : adjunto
+
+  HISTORIAL_CLINICO ||--o{ ENTRADA_HISTORIAL : registra
+
+  CITA ||--o| CONSULTA : origina
+  CITA ||--o{ NOTIFICACION : dispara
+  CITA ||--o| FACTURA : &quot;consulta genera&quot;
+
+  CONSULTA ||--o{ CONSULTA_SERVICIO : incluye
+  CONSULTA ||--o{ PRESCRIPCION : emite
+  CONSULTA ||--o{ ARCHIVO : adjunta
+
+  SERVICIO ||--o{ CONSULTA_SERVICIO : &quot;ofrecido en&quot;
+  PRODUCTO ||--o{ PRESCRIPCION : &quot;prescrito&quot;
+
+  FACTURA ||--o{ ITEM_FACTURA : contiene
+
+  USUARIO {
+    BIGSERIAL id PK
+    VARCHAR username UK
+    VARCHAR password_hash
+    VARCHAR nombre
+    VARCHAR email
+    ENUM rol &quot;ADMIN|VETERINARIO|RECEPCION&quot;
+    BOOLEAN activo
+    TIMESTAMPTZ created_at
+  }
+
+  DUENO {
+    BIGSERIAL id PK
+    VARCHAR dni UK
+    VARCHAR nombre
+    VARCHAR apellido
+    VARCHAR telefono
+    VARCHAR email
+    TEXT direccion
+    BOOLEAN activo
+  }
+
+  MASCOTA {
+    BIGSERIAL id PK
+    BIGINT dueno_id FK
+    VARCHAR nombre
+    VARCHAR especie
+    VARCHAR raza
+    DATE fecha_nacimiento
+    ENUM sexo &quot;MACHO|HEMBRA|DESCONOCIDO&quot;
+    NUMERIC peso_kg
+    VARCHAR microchip UK
+    TEXT observaciones
+    BOOLEAN activo
+  }
+
+  HISTORIAL_CLINICO {
+    BIGSERIAL id PK
+    BIGINT mascota_id UK,FK
+    DATE fecha_apertura
+    TEXT notas_generales
+    BOOLEAN cerrado
+  }
+
+  ENTRADA_HISTORIAL {
+    BIGSERIAL id PK
+    BIGINT historial_id FK
+    TIMESTAMPTZ fecha
+    VARCHAR tipo
+    TEXT descripcion
+    BIGINT autor_id FK
+  }
+
+  CITA {
+    BIGSERIAL id PK
+    BIGINT mascota_id FK
+    BIGINT veterinario_id FK
+    DATE fecha
+    TIME hora_inicio
+    TIME hora_fin
+    ENUM tipo_servicio
+    TEXT motivo
+    ENUM estado
+  }
+
+  SERVICIO {
+    BIGSERIAL id PK
+    VARCHAR codigo UK
+    VARCHAR nombre
+    NUMERIC precio
+    INTEGER duracion_minutos
+    BOOLEAN activo
+  }
+
+  PRODUCTO {
+    BIGSERIAL id PK
+    VARCHAR sku UK
+    VARCHAR nombre
+    VARCHAR unidad
+    NUMERIC precio_venta
+    INTEGER stock_actual
+    INTEGER stock_minimo
+    BOOLEAN activo
+  }
+
+  CONSULTA {
+    BIGSERIAL id PK
+    BIGINT cita_id UK,FK
+    BIGINT mascota_id FK
+    BIGINT veterinario_id FK
+    TIMESTAMPTZ fecha_hora
+    TEXT sintomas
+    TEXT diagnostico
+    TEXT tratamiento
+  }
+
+  CONSULTA_SERVICIO {
+    BIGSERIAL id PK
+    BIGINT consulta_id FK
+    BIGINT servicio_id FK
+    INTEGER cantidad
+    NUMERIC precio_cobrado
+  }
+
+  PRESCRIPCION {
+    BIGSERIAL id PK
+    BIGINT consulta_id FK
+    BIGINT producto_id FK
+    INTEGER cantidad
+    VARCHAR dosis
+    VARCHAR frecuencia
+    VARCHAR duracion
+    NUMERIC precio_unitario_cobrado
+  }
+
+  FACTURA {
+    BIGSERIAL id PK
+    VARCHAR numero UK
+    BIGINT consulta_id UK,FK
+    BIGINT dueno_id FK
+    TIMESTAMPTZ fecha_emision
+    NUMERIC subtotal
+    NUMERIC impuestos
+    NUMERIC total
+    ENUM estado &quot;EMITIDA|PAGADA|ANULADA&quot;
+  }
+
+  ITEM_FACTURA {
+    BIGSERIAL id PK
+    BIGINT factura_id FK
+    ENUM tipo &quot;SERVICIO|PRODUCTO&quot;
+    BIGINT ref_id
+    VARCHAR descripcion
+    NUMERIC cantidad
+    NUMERIC precio_unitario
+    NUMERIC subtotal
+  }
+
+  ARCHIVO {
+    BIGSERIAL id PK
+    BIGINT mascota_id FK
+    BIGINT consulta_id FK
+    VARCHAR nombre
+    VARCHAR path
+    VARCHAR mime
+    BIGINT size_bytes
+    BIGINT uploaded_by FK
+    TIMESTAMPTZ uploaded_at
+  }
+
+  NOTIFICACION {
+    BIGSERIAL id PK
+    BIGINT cita_id FK
+    ENUM canal &quot;EMAIL|SMS&quot;
+    ENUM estado &quot;PENDIENTE|ENVIADA|FALLIDA&quot;
+    TEXT payload
+    TIMESTAMPTZ enviado_at
+  }
+</code></pre>
+<hr />
+<h2 id="indices-relevantes">Índices relevantes</h2>
+<table>
+<thead>
+<tr>
+<th>Tabla</th>
+<th>Índice</th>
+<th>Finalidad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cita</td>
+<td><code>uq_cita_slot_vet</code></td>
+<td>Evita doble reserva por veterinario en mismo slot</td>
+</tr>
+<tr>
+<td>producto</td>
+<td><code>ix_producto_stock_bajo</code></td>
+<td>Alertas de stock mínimo</td>
+</tr>
+<tr>
+<td>consulta</td>
+<td><code>ix_consulta_mascota</code></td>
+<td>Vista historial clínico por mascota</td>
+</tr>
+<tr>
+<td>factura</td>
+<td><code>ix_factura_dueno</code></td>
+<td>Reportes por cliente</td>
+</tr>
+<tr>
+<td>item_factura</td>
+<td><code>ix_item_factura_factura</code></td>
+<td>Detalle de factura rápido</td>
+</tr>
+<tr>
+<td>notificacion</td>
+<td><code>ix_notificacion_estado_envio</code></td>
+<td>Cola de envío del worker</td>
+</tr>
+</tbody>
+</table></div>
+<div class="doc-title">Flujo Completo "Día en la Clínica" - VetSys</div>
+<div class="doc-meta">docs/fase-elaboracion/04-flujo-dia-completo.md</div>
+<div class="doc-content"><p><strong>Fase:</strong> Elaboración (modelo) → Transición (ejecución demo)
+<strong>Propósito:</strong> Diagrama end-to-end del escenario que se demostrará al profesor.
+<strong>Notación:</strong> PlantUML + Mermaid</p>
+<p>Este flujo cubre el ciclo completo desde que un cliente llega a la clínica hasta que paga y se marcha, pasando por los tres roles del sistema.</p>
+<hr />
+<h2 id="1-actores-participantes-en-el-escenario">1. Actores participantes en el escenario</h2>
+<ul>
+<li><strong>Cliente</strong> (dueño de mascota)</li>
+<li><strong>Recepción</strong> (operador de mostrador)</li>
+<li><strong>Veterinario</strong> (atiende consulta)</li>
+<li><strong>Caja</strong> (rol Recepción con permisos de cobro)</li>
+<li><strong>Sistema</strong> (worker de recordatorios)</li>
+</ul>
+<hr />
+<h2 id="2-flujo-narrativo">2. Flujo Narrativo</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Hora</th>
+<th>Quien</th>
+<th>Qué pasa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>09:00</td>
+<td>Sistema</td>
+<td>Envía recordatorio automático de cita del día</td>
+</tr>
+<tr>
+<td>2</td>
+<td>09:30</td>
+<td>Cliente</td>
+<td>Llega con su mascota Luna (sin cita previa)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>09:30</td>
+<td>Recepción</td>
+<td>Verifica si Luna está registrada; no, la registra + al dueño</td>
+</tr>
+<tr>
+<td>4</td>
+<td>09:35</td>
+<td>Recepción</td>
+<td>Agenda cita en slot libre con Dr. Pérez</td>
+</tr>
+<tr>
+<td>5</td>
+<td>09:50</td>
+<td>Recepción</td>
+<td>Confirma cita, sistema agenda recordatorio</td>
+</tr>
+<tr>
+<td>6</td>
+<td>10:00</td>
+<td>Veterinario</td>
+<td>Atiende a Luna, abre consulta desde cita</td>
+</tr>
+<tr>
+<td>7</td>
+<td>10:05</td>
+<td>Veterinario</td>
+<td>Registra síntomas y diagnóstico</td>
+</tr>
+<tr>
+<td>8</td>
+<td>10:10</td>
+<td>Veterinario</td>
+<td>Selecciona servicio "Consulta general"</td>
+</tr>
+<tr>
+<td>9</td>
+<td>10:12</td>
+<td>Veterinario</td>
+<td>Prescribe medicamento X (3 unidades, 5 días)</td>
+</tr>
+<tr>
+<td>10</td>
+<td>10:13</td>
+<td>Sistema</td>
+<td>Descuenta stock atómicamente, valida sin faltantes</td>
+</tr>
+<tr>
+<td>11</td>
+<td>10:14</td>
+<td>Veterinario</td>
+<td>Adjunta imagen de radiografía</td>
+</tr>
+<tr>
+<td>12</td>
+<td>10:15</td>
+<td>Veterinario</td>
+<td>Pulsa "Finalizar consulta"</td>
+</tr>
+<tr>
+<td>13</td>
+<td>10:15</td>
+<td>Sistema</td>
+<td>Persiste consulta, factura EMITIDA, historial actualizado</td>
+</tr>
+<tr>
+<td>14</td>
+<td>10:20</td>
+<td>Cliente</td>
+<td>Pasa a caja a pagar</td>
+</tr>
+<tr>
+<td>15</td>
+<td>10:20</td>
+<td>Caja</td>
+<td>Cobra factura, marca como PAGADA</td>
+</tr>
+<tr>
+<td>16</td>
+<td>10:25</td>
+<td>Cliente</td>
+<td>Se marcha con mascota, receta y factura</td>
+</tr>
+<tr>
+<td>17</td>
+<td>10:25</td>
+<td>Sistema</td>
+<td>Notifica al cliente email con resumen</td>
+</tr>
+<tr>
+<td>18</td>
+<td>fin día</td>
+<td>Admin</td>
+<td>Consulta reporte diario de atenciones</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-diagrama-de-actividad-general-plantuml">3. Diagrama de Actividad General - PlantUML</h2>
+<pre><code class="language-plantuml">@startuml
+|Cliente|
+|Recep|
+|Vet|
+|Caja|
+|Sistema|
+
+|Cliente|
+:09:30 - Llega a clínica;
+
+|Recep|
+:Verifica mascota;
+
+if (Existe?) then (no)
+  :Registra dueño y mascota;
+  :Asocia mascota a dueño;
+endif
+
+:Agenda cita en slot libre;
+:Sistema valida y crea cita;
+
+|Cliente|
+:Espera en sala;
+
+|Sistema|
+:09:00 - Envía recordatorio cita del día;
+
+|Vet|
+:10:00 - Inicia consulta desde cita;
+:Registra síntomas;
+:Registra diagnóstico;
+
+:Agrega servicios realizados;
+:Sistema congela precios;
+
+:Prescribe medicamento;
+
+|Sistema|
+:BEGIN TRANSACTION;
+:SELECT producto FOR UPDATE;
+
+if (stock suficiente?) then (sí)
+  :UPDATE stock_actual -= cant;
+  :INSERT prescripcion;
+else (no)
+  :ROLLBACK;
+  :EX-011;
+  stop
+endif
+
+:Vet adjunta archivo;
+:Vet finaliza consulta;
+
+|Caja|
+:BEGIN / Sigue transacción;
+:Calcula subtotal;
+:Aplica impuestos;
+:Crea factura (EMITIDA);
+:Inserta item_factura (servicios + productos);
+:UPDATE cita = ATENDIDA;
+:INSERT entrada_historial;
+:COMMIT;
+
+|Cliente|
+:Pasa a caja;
+
+|Caja|
+:Cobra factura;
+:UPDATE factura = PAGADA;
+
+|Sistema|
+:10:25 - Email resumen al cliente;
+
+|Cliente|
+:Se marcha con mascota + receta + factura;
+
+@enduml
+</code></pre>
+<hr />
+<h2 id="4-diagrama-mermaid-equivalente">4. Diagrama Mermaid equivalente</h2>
+<pre><code class="language-mermaid">flowchart TD
+  subgraph Cliente
+    C1[Llega a clínica] --&gt; C2[Espera en sala]
+    C2 --&gt; C3[Pasa a caja]
+    C3 --&gt; C4[Se marcha]
+  end
+
+  subgraph Recep [Recepción]
+    R1[Verifica mascota]
+    R2{Existe?}
+    R3[Registra dueño + mascota]
+    R4[Agenda cita]
+  end
+
+  subgraph Vet [Veterinario]
+    V1[Abre consulta desde cita]
+    V2[Registra síntomas/diagnóstico]
+    V3[+ Servicios]
+    V4[+ Prescripción]
+    V5[+ Archivo]
+    V6[Finaliza consulta]
+  end
+
+  subgraph Caja
+    K1[Calcula totales]
+    K2[Crea factura EMITIDA]
+    K3[Comprobante pago]
+    K4[Factura PAGADA]
+  end
+
+  subgraph Sistema
+    S1[Recordatorio 24h antes]
+    S2[Valida stock atómico]
+    S3[Factura correlativa]
+    S4[Email resumen]
+  end
+
+  C1 --&gt; R1
+  R1 --&gt; R2
+  R2 -- no --&gt; R3
+  R2 -- sí --&gt; R4
+  R3 --&gt; R4
+  R4 --&gt; S1
+  R4 --&gt; C2
+
+  C2 --&gt; V1
+  V1 --&gt; V2
+  V2 --&gt; V3
+  V3 --&gt; V4
+  V4 --&gt; S2
+  S2 -- ok --&gt; V5
+  S2 -- insuficiente --&gt; EX011[EX-011 ajustar]
+  EX011 --&gt; V4
+  V5 --&gt; V6
+  V6 --&gt; S3
+  S3 --&gt; K1
+  K1 --&gt; K2
+  K2 --&gt; C3
+  C3 --&gt; K3
+  K3 --&gt; K4
+  K4 --&gt; S4
+  S4 --&gt; C4
+</code></pre>
+<hr />
+<h2 id="5-diagrama-de-secuencia-completo-plantuml">5. Diagrama de Secuencia Completo - PlantUML</h2>
+<pre><code class="language-plantuml">@startuml
+actor Cliente
+actor Recep as R
+actor Vet as V
+actor Caja as K
+participant UI
+participant API
+database DB
+participant Worker
+
+== Registro y Cita ==
+Cliente -&gt; R: Llega con mascota
+R -&gt; UI: Buscar mascota por DNI
+UI -&gt; API: GET /api/duenos?dni=
+API -&gt; DB: SELECT
+DB --&gt; API: resultado
+API --&gt; UI: 200 (no existe)
+R -&gt; UI: Registra dueño
+UI -&gt; API: POST /api/duenos
+API -&gt; DB: INSERT dueno
+DB --&gt; API: duenoId
+R -&gt; UI: Registra mascota
+UI -&gt; API: POST /api/mascotas
+API -&gt; DB: INSERT mascota
+R -&gt; UI: Agenda cita
+UI -&gt; API: POST /api/citas
+API -&gt; DB: validar slot + INSERT cita
+API -&gt; Worker: schedule recordatorio
+API --&gt; UI: 201 citaId
+
+== Atención Veterinaria ==
+Cliente -&gt; V: pasa a consulta
+V -&gt; UI: abre consulta desde cita
+UI -&gt; API: POST /api/citas/:id/consulta
+API -&gt; DB: INSERT consulta (borrador)
+DB --&gt; API: consultaId
+
+V -&gt; UI: + Servicio &quot;Consulta General&quot;
+UI -&gt; API: POST /api/consultas/:id/servicios
+API -&gt; DB: SELECT precio + INSERT
+
+V -&gt; UI: + Producto &quot;Antibiótico X&quot; cant=3
+UI -&gt; API: POST /api/consultas/:id/prescripciones
+API -&gt; DB: BEGIN; SELECT FOR UPDATE producto
+API -&gt; DB: stock &gt;= 3 ? si
+API -&gt; DB: UPDATE stock -= 3; INSERT prescripcion
+
+V -&gt; UI: + Archivo radiografia.png
+UI -&gt; API: POST /api/consultas/:id/archivos
+API -&gt; API: escribe ./data/uploads/x.png
+API -&gt; DB: INSERT archivo
+
+V -&gt; UI: Finalizar consulta
+UI -&gt; API: POST /api/consultas/:id/finalizar
+API -&gt; DB: BEGIN TRANSACTION
+API -&gt; DB: SELECT SUM servicios + SUM prescripciones = subtotal
+API -&gt; DB: subtotal * 0.16 = impuestos
+API -&gt; DB: INSERT factura (EMITIDA)
+API -&gt; DB: INSERT item_factura servicios
+API -&gt; DB: INSERT item_factura productos
+API -&gt; DB: UPDATE cita = ATENDIDA
+API -&gt; DB: INSERT entrada_historial
+API -&gt; DB: COMMIT
+API --&gt; UI: 200 {consulta, factura}
+
+== Cobro ==
+Cliente -&gt; K: presenta para pago
+K -&gt; UI: ver factura
+UI -&gt; API: GET /api/facturas/:id
+K -&gt; UI: marcar pagada
+UI -&gt; API: POST /api/facturas/:id/pagar
+API -&gt; DB: UPDATE estado = PAGADA
+API -&gt; Worker: enqueue email resumen
+Worker -&gt; Cliente: envía email con factura
+
+@enduml
+</code></pre>
+<hr />
+<h2 id="6-puntos-criticos-cubiertos-mapeo-a-reglas-de-negocio">6. Puntos críticos cubiertos (mapeo a reglas de negocio)</h2>
+<table>
+<thead>
+<tr>
+<th>RN</th>
+<th>Punto en el flujo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RN-01</td>
+<td>Una cita solo origina una consulta (transacción de <code>Finalizar</code>)</td>
+</tr>
+<tr>
+<td>RN-02</td>
+<td>N prescripciones por consulta, una por producto</td>
+</tr>
+<tr>
+<td>RN-03</td>
+<td>Stock descontado dentro de BEGIN/COMMIT</td>
+</tr>
+<tr>
+<td>RN-04</td>
+<td>Factura no se elimina, se anula (no aplica aquí porque es flujo feliz)</td>
+</tr>
+<tr>
+<td>RN-05</td>
+<td>Historial clínico actualizado automáticamente</td>
+</tr>
+<tr>
+<td>RN-06</td>
+<td>Número de factura correlativo vía <code>factura_numero_seq</code></td>
+</tr>
+<tr>
+<td>RN-07</td>
+<td>Sesión activa exigida en cada request (validado por middleware JWT)</td>
+</tr>
+<tr>
+<td>RN-08</td>
+<td>Validación de slot único (uq_cita_slot_vet)</td>
+</tr>
+<tr>
+<td>RN-09</td>
+<td>Motivo obligatorio al agendar</td>
+</tr>
+<tr>
+<td>RN-11</td>
+<td>No se cancelan citas ATENDIDAS</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-variantes-a-demostrar-en-la-presentacion">7. Variantes a demostrar en la presentación</h2>
+<table>
+<thead>
+<tr>
+<th>Variante</th>
+<th>Cómo se demuestra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Cliente con cita previa</strong></td>
+<td>Saltar al paso de Atención, omitir Registro</td>
+</tr>
+<tr>
+<td><strong>Cancelación</strong></td>
+<td>Mostrar UC-05 antes de atención</td>
+</tr>
+<tr>
+<td><strong>Stock bajo</strong></td>
+<td>Provocar EX-011 mostrando mensaje al veterinario</td>
+</tr>
+<tr>
+<td><strong>Reprogramación</strong></td>
+<td>Cliente llama para cambiar hora, Recep usa UC-04</td>
+</tr>
+<tr>
+<td><strong>Anulación factura</strong></td>
+<td>Admin corrige cobro, factura pasa a ANULADA con nuevo comprobante</td>
+</tr>
+</tbody>
+</table></div>
+<div class="doc-title">Máquinas de Estado - VetSys</div>
+<div class="doc-meta">docs/fase-elaboracion/05-estados.md</div>
+<div class="doc-content"><p><strong>Fase:</strong> Elaboración
+<strong>Propósito:</strong> Documentar el ciclo de vida de las entidades con estados explícitos.
+<strong>Notación:</strong> PlantUML state + Mermaid stateDiagram</p>
+<hr />
+<h2 id="1-estados-de-cita">1. Estados de <code>Cita</code></h2>
+<pre><code class="language-plantuml">@startuml
+[*] --&gt; PROGRAMADA : recepcionista agenda
+PROGRAMADA --&gt; CONFIRMADA : cliente confirma / recordatorio enviado OK
+PROGRAMADA --&gt; CANCELADA : cliente cancela
+PROGRAMADA --&gt; NO_ASISTIO : no llega tras 15 min
+CONFIRMADA --&gt; EN_CURSO : veterinario abre consulta
+CONFIRMADA --&gt; CANCELADA : cliente cancela
+CONFIRMADA --&gt; NO_ASISTIO : no llega
+EN_CURSO --&gt; ATENDIDA : consulta finalizada y facturada
+EN_CURSO --&gt; CANCELADA : veterinario cancela (rollback)
+ATENDIDA --&gt; [*]
+CANCELADA --&gt; [*]
+NO_ASISTIO --&gt; [*]
+
+note right of CANCELADA
+  Cancelación desde EN_CURSO
+  requiere rollback de
+  prescripciones y no genera factura.
+end note
+@enduml
+</code></pre>
+<p><strong>Mermaid equivalente:</strong></p>
+<pre><code class="language-mermaid">stateDiagram-v2
+  [*] --&gt; PROGRAMADA
+  PROGRAMADA --&gt; CONFIRMADA : recordatorio OK
+  PROGRAMADA --&gt; CANCELADA
+  PROGRAMADA --&gt; NO_ASISTIO
+  CONFIRMADA --&gt; EN_CURSO : abre consulta
+  CONFIRMADA --&gt; CANCELADA
+  CONFIRMADA --&gt; NO_ASISTIO
+  EN_CURSO --&gt; ATENDIDA : factura emitida
+  EN_CURSO --&gt; CANCELADA : rollback
+  ATENDIDA --&gt; [*]
+  CANCELADA --&gt; [*]
+  NO_ASISTIO --&gt; [*]
+</code></pre>
+<p><strong>Transiciones válidas (tabla):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Origen</th>
+<th>Destino</th>
+<th>Disparador</th>
+<th>Actor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(ninguno)</td>
+<td>PROGRAMADA</td>
+<td>INSERT inicial</td>
+<td>Recepción</td>
+</tr>
+<tr>
+<td>PROGRAMADA</td>
+<td>CONFIRMADA</td>
+<td>Sistema (recordatorio enviado OK) o Recepción manual</td>
+<td>Sistema / Recepción</td>
+</tr>
+<tr>
+<td>PROGRAMADA</td>
+<td>CANCELADA</td>
+<td>Cancelación</td>
+<td>Recepción / Cliente</td>
+</tr>
+<tr>
+<td>PROGRAMADA</td>
+<td>NO_ASISTIO</td>
+<td>Tarea programada (15 min post slot)</td>
+<td>Sistema</td>
+</tr>
+<tr>
+<td>CONFIRMADA</td>
+<td>EN_CURSO</td>
+<td>Veterinario abre consulta</td>
+<td>Veterinario</td>
+</tr>
+<tr>
+<td>CONFIRMADA</td>
+<td>CANCELADA</td>
+<td>Cancelación</td>
+<td>Recepción / Cliente</td>
+</tr>
+<tr>
+<td>CONFIRMADA</td>
+<td>NO_ASISTIO</td>
+<td>Tarea programada</td>
+<td>Sistema</td>
+</tr>
+<tr>
+<td>EN_CURSO</td>
+<td>ATENDIDA</td>
+<td><code>POST /finalizar</code> exitoso</td>
+<td>Veterinario</td>
+</tr>
+<tr>
+<td>EN_CURSO</td>
+<td>CANCELADA</td>
+<td>Botón "cancelar consulta" con confirmación</td>
+<td>Veterinario</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-estados-de-consulta">2. Estados de <code>Consulta</code></h2>
+<pre><code class="language-plantuml">@startuml
+[*] --&gt; BORRADOR : veterinario abre consulta
+BORRADOR --&gt; BORRADOR : +servicio / +prescripcion / +archivo
+BORRADOR --&gt; FINALIZADA : POST /finalizar (BEGIN/COMMIT OK)
+BORRADOR --&gt; CANCELADA : veterinario cancela
+FINALIZADA --&gt; [*]
+CANCELADA --&gt; [*]
+
+note right of FINALIZADA
+  Estado terminal.
+  Dispara: factura EMITIDA,
+  UPDATE cita=ATENDIDA,
+  INSERT entrada_historial
+end note
+
+note left of BORRADOR
+  No se descuenta stock
+  hasta finalizar.
+  Stock reservado virtualmente.
+end note
+@enduml
+</code></pre>
+<hr />
+<h2 id="3-estados-de-factura">3. Estados de <code>Factura</code></h2>
+<pre><code class="language-plantuml">@startuml
+[*] --&gt; EMITIDA : al finalizar consulta
+EMITIDA --&gt; PAGADA : recepcion cobra
+EMITIDA --&gt; ANULADA : admin anula
+PAGADA --&gt; ANULADA : admin reversa (caso especial)
+ANULADA --&gt; [*]
+PAGADA --&gt; [*]
+
+note right of ANULADA
+  Mantiene auditoría.
+  No se elimina.
+  Solo rol Admin (RN-04).
+end note
+@enduml
+</code></pre>
+<p><strong>Mermaid:</strong></p>
+<pre><code class="language-mermaid">stateDiagram-v2
+  [*] --&gt; EMITIDA
+  EMITIDA --&gt; PAGADA : cobro
+  EMITIDA --&gt; ANULADA : admin
+  PAGADA --&gt; ANULADA : admin reversa
+  PAGADA --&gt; [*]
+  ANULADA --&gt; [*]
+</code></pre>
+<hr />
+<h2 id="4-estados-de-producto-stock">4. Estados de <code>Producto</code> (stock)</h2>
+<pre><code class="language-plantuml">@startuml
+[*] --&gt; DISPONIBLE : alta de producto
+DISPONIBLE --&gt; STOCK_BAJO : stock_actual &lt;= stock_minimo
+STOCK_BAJO --&gt; DISPONIBLE : reposicion (UPDATE stock +=)
+DISPONIBLE --&gt; AGOTADO : stock_actual = 0
+STOCK_BAJO --&gt; AGOTADO : stock_actual = 0
+AGOTADO --&gt; DISPONIBLE : reposicion
+DISPONIBLE --&gt; INACTIVO : admin desactiva
+INACTIVO --&gt; [*]
+STOCK_BAJO --&gt; INACTIVO
+AGOTADO --&gt; INACTIVO
+@enduml
+</code></pre>
+<hr />
+<h2 id="5-estados-de-notificacion">5. Estados de <code>Notificacion</code></h2>
+<pre><code class="language-plantuml">@startuml
+[*] --&gt; PENDIENTE : al crear cita
+PENDIENTE --&gt; ENVIADA : SMTP 2xx
+PENDIENTE --&gt; FALLIDA : SMTP error / timeout
+FALLIDA --&gt; PENDIENTE : worker reintenta (max 3, backoff)
+FALLIDA --&gt; DESCARTADA : excede reintentos + manual
+ENVIADA --&gt; [*]
+DESCARTADA --&gt; [*]
+@enduml
+</code></pre></div>
+<div class="doc-title">Arquitectura, Componentes y Despliegue - VetSys</div>
+<div class="doc-meta">docs/fase-elaboracion/06-arquitectura-despliegue.md</div>
+<div class="doc-content"><p><strong>Fase:</strong> Elaboración (diseño) → Transición (implantación)
+<strong>Notación:</strong> PlantUML component + PlantUML deployment + Mermaid</p>
+<hr />
+<h2 id="1-diagrama-de-componentes-plantuml">1. Diagrama de Componentes - PlantUML</h2>
+<pre><code class="language-plantuml">@startuml
+package &quot;Cliente (navegador web)&quot; {
+  [Astro SSR\nPuerto 4321] as Astro
+}
+
+package &quot;API Backend (Bun runtime)&quot; {
+  [Elysia REST API\nPuerto 3001] as Elysia
+}
+
+package &quot;Worker (Bun standalone)&quot; {
+  [Cron Recordatorios] as Cron
+  [SMTP Mailer] as Mailer
+}
+
+database &quot;PostgreSQL 16\nPuerto 5432&quot; as PG
+
+folder &quot;Volumen Docker&quot; {
+  [&quot;./data/uploads\n(imágenes, PDFs)&quot;] as Uploads
+}
+
+cloud &quot;Internet&quot; {
+  [Proveedor SMTP\n(Gmail/Mailgun/etc)] as SMTP
+}
+
+Astro --&gt; Elysia : fetch /api/* (proxy server-side)
+Astro --&gt; PG : server-only direct (seed admin)
+Elysia --&gt; PG : queries SQL (pg)
+Elysia --&gt; Uploads : write/read archivos
+Cron --&gt; PG : polling cada 5 min
+Cron --&gt; Mailer : enqueue
+Mailer --&gt; SMTP : SMTP over TLS
+SMTP --&gt; Cliente : email con resumen
+
+@enduml
+</code></pre>
+<p><strong>Mermaid equivalente:</strong></p>
+<pre><code class="language-mermaid">flowchart LR
+  subgraph Cliente
+    BR[Navegador]
+  end
+  subgraph Host[Servidor Linux]
+    direction TB
+    A[Astro SSR :4321]
+    E[Elysia API :3001]
+    W[Worker Bun]
+    DB[(PostgreSQL :5432)]
+    U[/data/uploads/]
+  end
+  subgraph Nube
+    S[Proveedor SMTP]
+  end
+
+  BR --&gt;|HTTP| A
+  A --&gt;|fetch /api| E
+  E --&gt;|pg driver| DB
+  E --&gt;|escribe| U
+  W --&gt;|pool| DB
+  W --&gt;|mailer| S
+  S --&gt;|email| BR
+</code></pre>
+<hr />
+<h2 id="2-diagrama-de-despliegue-plantuml">2. Diagrama de Despliegue - PlantUML</h2>
+<pre><code class="language-plantuml">@startuml
+node &quot;Servidor Linux (Ubuntu 22.04 LTS)&quot; as Linux {
+  node &quot;Docker Engine&quot; as Docker {
+    container &quot;vetsys-frontend\n(Astro SSR)\n:4321&quot; as C1
+    container &quot;vetsys-api\n(Bun + Elysia)\n:3001&quot; as C2
+    container &quot;vetsys-worker\n(Bun cron SMTP)&quot; as C3
+    container &quot;vetsys-db\n(PostgreSQL 16)\n:5432&quot; as C4
+    container &quot;vetsys-mailhog\n(SMTP testing)\n:1025 smtp / :8025 ui&quot; as C5
+    volume &quot;./data/uploads\n(adjuntos)&quot; as V1
+    volume &quot;./db/data\n(persistencia DB)&quot; as V2
+  }
+}
+
+node &quot;Operador (navegador)&quot; as Op
+node &quot;Correo destino&quot; as Mail
+
+Op --&gt; C1 : HTTPS :4321
+C1 --&gt; C2 : HTTP :3001
+C2 --&gt; C4 : pg :5432
+C2 --&gt; V1 : mount
+C4 --&gt; V2 : mount
+C3 --&gt; C4 : queries
+C3 --&gt; C5 : SMTP :1025
+C5 --&gt; Op : UI mailhog :8025 (debug)
+C5 --&gt; Mail : relay a SMTP real en prod
+
+@enduml
+</code></pre>
+<hr />
+<h2 id="3-mapa-de-contenedores-docker-compose">3. Mapa de Contenedores (docker-compose)</h2>
+<pre><code class="language-yaml"># deploy/docker-compose.yml (resumen)
+services:
+  frontend:
+    image: vetsys-frontend
+    build: ../apps/frontend
+    ports: [&quot;4321:4321&quot;]
+    depends_on: [api]
+    environment:
+      - PUBLIC_API_URL=http://api:3001
+
+  api:
+    image: vetsys-api
+    build: ../apps/backend
+    ports: [&quot;3001:3001&quot;]
+    depends_on: [db]
+    environment:
+      - DATABASE_URL=postgres://vetsys:***@db:5432/vetsys
+      - JWT_SECRET=${JWT_SECRET}
+      - UPLOAD_DIR=/data/uploads
+
+  worker:
+    image: vetsys-worker
+    build: ../apps/worker
+    depends_on: [db, mailhog]
+    environment:
+      - DATABASE_URL=postgres://vetsys:***@db:5432/vetsys
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+
+  db:
+    image: postgres:16-alpine
+    ports: [&quot;5432:5432&quot;]
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_USER=vetsys
+      - POSTGRES_PASSWORD=***
+      - POSTGRES_DB=vetsys
+
+  mailhog:
+    image: mailhog/mailhog
+    ports: [&quot;1025:1025&quot;, &quot;8025:8025&quot;]
+
+volumes:
+  dbdata:
+  uploads:
+</code></pre>
+<hr />
+<h2 id="4-red-y-volumenes">4. Red y volúmenes</h2>
+<table>
+<thead>
+<tr>
+<th>Recurso</th>
+<th>Tipo</th>
+<th>Persistencia</th>
+<th>Backup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dbdata</code></td>
+<td>Volumen Docker</td>
+<td>Sí (sobrevive reinicios)</td>
+<td>Dump diario + rsync</td>
+</tr>
+<tr>
+<td><code>uploads</code></td>
+<td>Bind mount <code>./data/uploads</code></td>
+<td>Sí (carpeta host)</td>
+<td>rsync diario</td>
+</tr>
+<tr>
+<td>Red <code>vetsys-net</code></td>
+<td>Bridge interna</td>
+<td>Servicio a servicio</td>
+<td>N/A</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-tamano-de-contenedores-estimado">5. Tamaño de contenedores (estimado)</h2>
+<table>
+<thead>
+<tr>
+<th>Contenedor</th>
+<th>Imagen base</th>
+<th>RAM estimada</th>
+<th>CPU</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>frontend</td>
+<td>node:22-alpine + Astro</td>
+<td>150 MB</td>
+<td>0.25</td>
+</tr>
+<tr>
+<td>api</td>
+<td>oven/bun:alpine</td>
+<td>200 MB</td>
+<td>0.5</td>
+</tr>
+<tr>
+<td>worker</td>
+<td>oven/bun:alpine</td>
+<td>100 MB</td>
+<td>0.2</td>
+</tr>
+<tr>
+<td>db</td>
+<td>postgres:16-alpine</td>
+<td>256 MB</td>
+<td>0.5</td>
+</tr>
+<tr>
+<td>mailhog</td>
+<td>mailhog/mailhog</td>
+<td>50 MB</td>
+<td>0.1</td>
+</tr>
+</tbody>
+</table>
+<p>Total estimado: ~750 MB RAM, holgura amplia en servidor 4 GB.</p></div>
+<div class="section-title">FASE DE CONSTRUCCIÓN (Construction)</div>
+<div class="doc-title">Fase Construcción - VetSys</div>
+<div class="doc-meta">docs/fase-construccion/README.md</div>
+<div class="doc-content"><p>Tres iteraciones de código funcional sobre el stack acordado.</p>
+<h2 id="iteraciones">Iteraciones</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Nombre</th>
+<th>Detalle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Pacientes y Citas</td>
+<td><a href="./iteracion-1-pacientes-citas.md">iteracion-1-pacientes-citas.md</a></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Consulta Médica</td>
+<td><a href="./iteracion-2-consulta-medica.md">iteracion-2-consulta-medica.md</a></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Inventario y Facturación</td>
+<td><a href="./iteracion-3-inventario-facturacion.md">iteracion-3-inventario-facturacion.md</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="estructura-de-codigo">Estructura de código</h2>
+<pre><code>apps/
+├── backend/                    # Elysia API + auth + RBAC
+│   ├── src/
+│   │   ├── server.ts
+│   │   ├── db/{pool,migrate,seed}.ts
+│   │   ├── modules/
+│   │   │   ├── auth/auth.routes.ts
+│   │   │   ├── duenos/dueno.routes.ts
+│   │   │   ├── mascotas/mascota.routes.ts
+│   │   │   ├── citas/cita.routes.ts
+│   │   │   ├── consultas/consulta.routes.ts
+│   │   │   ├── productos/producto.routes.ts
+│   │   │   └── facturas/factura.routes.ts
+│   │   └── prototype/consulta-flow.ts
+│   ├── package.json
+│   └── tsconfig.json
+└── worker/                     # Cron recordatorios + SMTP
+    ├── src/index.ts
+    └── package.json
+
+db/
+├── migrations/0001_init.sql
+└── seeds/001_seed_basico.sql
+
+deploy/
+├── docker-compose.yml          # 4 servicios
+└── .env.example
+</code></pre>
+<h2 id="plan-de-pruebas-ejecutado">Plan de pruebas ejecutado</h2>
+<p>Cada iteración incluye su bloque "Pruebas" y "Validación" con <code>curl</code> reales. Los casos críticos:</p>
+<ul>
+<li>Stock insuficiente concurrente (FOR UPDATE)</li>
+<li>Factura correlativa sin huecos (secuencia)</li>
+<li>Anulación factura pagada por admin</li>
+<li>Recordatorio 24h vía worker</li>
+<li>Marcar NO_ASISTIO automático</li>
+</ul>
+<h2 id="despliegue">Despliegue</h2>
+<pre><code class="language-bash">cp deploy/.env.example deploy/.env
+docker compose -f deploy/docker-compose.yml up -d
+docker compose -f deploy/docker-compose.yml logs -f api worker
+</code></pre>
+<p>Servicios:
+- <code>db</code> (5432)
+- <code>api</code> (3001)
+- <code>worker</code> (cron)
+- <code>mailhog</code> (1025 SMTP / 8025 UI)</p>
+<p>Credenciales seed: <code>admin / admin123</code>.</p></div>
+<div class="doc-title">Iteración 1 - Gestión de Pacientes y Citas</div>
+<div class="doc-meta">docs/fase-construccion/iteracion-1-pacientes-citas.md</div>
+<div class="doc-content"><p><strong>Sprint:</strong> 1 de 3
+<strong>Objetivo:</strong> Backend funcional con auth, CRUD de dueños/mascotas y gestión de agenda.</p>
+<h2 id="entregables">Entregables</h2>
+<table>
+<thead>
+<tr>
+<th>Capa</th>
+<th>Archivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Auth</td>
+<td><code>apps/backend/src/modules/auth/auth.routes.ts</code></td>
+</tr>
+<tr>
+<td>Dueños</td>
+<td><code>apps/backend/src/modules/duenos/dueno.routes.ts</code></td>
+</tr>
+<tr>
+<td>Mascotas</td>
+<td><code>apps/backend/src/modules/mascotas/mascota.routes.ts</code></td>
+</tr>
+<tr>
+<td>Citas</td>
+<td><code>apps/backend/src/modules/citas/cita.routes.ts</code></td>
+</tr>
+<tr>
+<td>Migraciones</td>
+<td><code>db/migrations/0001_init.sql</code></td>
+</tr>
+<tr>
+<td>Seed</td>
+<td><code>db/seeds/001_seed_basico.sql</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="endpoints">Endpoints</h2>
+<pre><code>POST   /api/auth/login
+GET    /api/duenos?q=
+GET    /api/duenos/:id
+POST   /api/duenos
+PATCH  /api/duenos/:id
+DELETE /api/duenos/:id         (borrado lógico)
+
+GET    /api/mascotas?duenoId=
+GET    /api/mascotas/:id       (incluye historial clínico)
+POST   /api/mascotas           (crea mascota + historial 1:1)
+
+GET    /api/citas?fecha=
+GET    /api/citas/:id
+POST   /api/citas              (valida slot, agenda recordatorio)
+PATCH  /api/citas/:id/reprogramar
+PATCH  /api/citas/:id/cancelar
+</code></pre>
+<h2 id="criterios-de-aceptacion">Criterios de aceptación</h2>
+<ul>
+<li>Login devuelve JWT firmado válido 8h.</li>
+<li>Dueño no se duplica por DNI (UNIQUE constraint).</li>
+<li>Mascota requiere dueño existente (FK ON DELETE RESTRICT).</li>
+<li>Mascota con microchip duplicado retorna EX-008.</li>
+<li>Cita creada reserva slot único por veterinario.</li>
+<li>Reprogramar cita bloquea slot con <code>FOR UPDATE</code>.</li>
+<li>Cancelar descarta notificaciones pendientes.</li>
+</ul>
+<h2 id="pruebas-sugeridas">Pruebas sugeridas</h2>
+<pre><code class="language-bash"># Login
+curl -X POST localhost:3001/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{&quot;username&quot;:&quot;admin&quot;,&quot;password&quot;:&quot;admin123&quot;}'
+
+# Crear dueño
+curl -X POST localhost:3001/api/duenos \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H 'Content-Type: application/json' \
+  -d '{&quot;dni&quot;:&quot;12345678&quot;,&quot;nombre&quot;:&quot;Ana&quot;,&quot;apellido&quot;:&quot;Pérez&quot;}'
+
+# Crear mascota
+curl -X POST localhost:3001/api/mascotas \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H 'Content-Type: application/json' \
+  -d '{&quot;duenoId&quot;:1,&quot;nombre&quot;:&quot;Luna&quot;,&quot;especie&quot;:&quot;perro&quot;,&quot;sexo&quot;:&quot;HEMBRA&quot;}'
+
+# Agendar cita
+curl -X POST localhost:3001/api/citas \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H 'Content-Type: application/json' \
+  -d '{&quot;mascotaId&quot;:1,&quot;fecha&quot;:&quot;2026-07-20&quot;,&quot;horaInicio&quot;:&quot;10:00&quot;,&quot;horaFin&quot;:&quot;10:30&quot;,&quot;tipoServicio&quot;:&quot;CONSULTA&quot;,&quot;motivo&quot;:&quot;Vacunación anual&quot;}'
+</code></pre></div>
+<div class="doc-title">Iteración 2 - Módulo de Consulta Médica</div>
+<div class="doc-meta">docs/fase-construccion/iteracion-2-consulta-medica.md</div>
+<div class="doc-content"><p><strong>Sprint:</strong> 2 de 3
+<strong>Objetivo:</strong> Flujo clínico del veterinario: consulta, prescripción con descuento atómico de stock, archivos adjuntos.</p>
+<h2 id="entregables">Entregables</h2>
+<table>
+<thead>
+<tr>
+<th>Capa</th>
+<th>Archivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Consulta médica</td>
+<td><code>apps/backend/src/modules/consultas/consulta.routes.ts</code></td>
+</tr>
+<tr>
+<td>Prototipo arquitectónico</td>
+<td><code>apps/backend/src/prototype/consulta-flow.ts</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="endpoints">Endpoints</h2>
+<pre><code>POST   /api/citas/:id/consulta          (crea consulta borrador, cita → EN_CURSO)
+POST   /api/consultas/:id/servicios     (acumula servicio en pre-factura)
+POST   /api/consultas/:id/prescripciones (descuenta stock atómicamente)
+POST   /api/consultas/:id/archivos      (multipart, valida mime/tamaño)
+POST   /api/consultas/:id/finalizar     (transacción: factura + items + historial)
+</code></pre>
+<h2 id="reglas-implementadas">Reglas implementadas</h2>
+<table>
+<thead>
+<tr>
+<th>RN</th>
+<th>Implementación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RN-01</td>
+<td><code>consulta.cita_id</code> UNIQUE</td>
+</tr>
+<tr>
+<td>RN-02</td>
+<td>N prescripciones permitidas, cada una con 1 producto</td>
+</tr>
+<tr>
+<td>RN-03</td>
+<td><code>withTransaction</code> + <code>SELECT FOR UPDATE</code> en producto</td>
+</tr>
+<tr>
+<td>RN-05</td>
+<td>INSERT en <code>entrada_historial</code> al finalizar</td>
+</tr>
+<tr>
+<td>RN-06</td>
+<td><code>nextval('factura_numero_seq')</code></td>
+</tr>
+<tr>
+<td>RN-07</td>
+<td><code>requireAuth(['VETERINARIO','ADMIN'])</code> en routes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="excepciones-manejadas">Excepciones manejadas</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Origen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EX-004</td>
+<td>zod validación</td>
+</tr>
+<tr>
+<td>EX-009</td>
+<td>cita no existe</td>
+</tr>
+<tr>
+<td>EX-010</td>
+<td>cita en estado no válido</td>
+</tr>
+<tr>
+<td>EX-011</td>
+<td>stock insuficiente</td>
+</tr>
+<tr>
+<td>EX-012</td>
+<td>producto/servicio inactivo</td>
+</tr>
+<tr>
+<td>EX-019</td>
+<td>id inexistente</td>
+</tr>
+<tr>
+<td>EX-021</td>
+<td>archivo &gt; 10 MB</td>
+</tr>
+<tr>
+<td>EX-022</td>
+<td>mime no permitido</td>
+</tr>
+<tr>
+<td>EX-023</td>
+<td>error de escritura en disco</td>
+</tr>
+</tbody>
+</table>
+<h2 id="pruebas">Pruebas</h2>
+<pre><code class="language-bash"># Crear consulta
+curl -X POST localhost:3001/api/citas/1/consulta \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H 'Content-Type: application/json' \
+  -d '{&quot;sintomas&quot;:&quot;Cojera&quot;,&quot;diagnostico&quot;:&quot;Esguince leve&quot;}'
+
+# Prescribir (descuenta stock)
+curl -X POST localhost:3001/api/consultas/1/prescripciones \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H 'Content-Type: application/json' \
+  -d '{&quot;productoId&quot;:1,&quot;cantidad&quot;:3,&quot;dosis&quot;:&quot;1 comp&quot;,&quot;frecuencia&quot;:&quot;12h&quot;,&quot;duracion&quot;:&quot;5 dias&quot;}'
+
+# Forzar EX-011
+curl -X POST localhost:3001/api/consultas/1/prescripciones \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H 'Content-Type: application/json' \
+  -d '{&quot;productoId&quot;:1,&quot;cantidad&quot;:9999}'
+
+# Finalizar (transacción completa)
+curl -X POST localhost:3001/api/consultas/1/finalizar \
+  -H &quot;Authorization: Bearer $TOKEN&quot;
+</code></pre>
+<h2 id="validacion-de-stock-atomico">Validación de stock atómico</h2>
+<p>Se simula concurrencia en <code>prototype/consulta-flow.ts</code> o vía script Bun con dos requests paralelos sobre el mismo producto: solo una transacción descuenta; la otra recibe EX-011 si excede stock. La fila se bloquea con <code>FOR UPDATE</code>.</p></div>
+<div class="doc-title">Iteración 3 - Inventario y Facturación</div>
+<div class="doc-meta">docs/fase-construccion/iteracion-3-inventario-facturacion.md</div>
+<div class="doc-content"><p><strong>Sprint:</strong> 3 de 3
+<strong>Objetivo:</strong> CRUD de productos/servicios, ciclo de vida de factura (emitir/pagar/anular), worker de notificaciones SMTP.</p>
+<h2 id="entregables">Entregables</h2>
+<table>
+<thead>
+<tr>
+<th>Capa</th>
+<th>Archivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Productos/Servicios</td>
+<td><code>apps/backend/src/modules/productos/producto.routes.ts</code></td>
+</tr>
+<tr>
+<td>Facturas</td>
+<td><code>apps/backend/src/modules/facturas/factura.routes.ts</code></td>
+</tr>
+<tr>
+<td>Worker cron</td>
+<td><code>apps/worker/src/index.ts</code></td>
+</tr>
+<tr>
+<td>Compose</td>
+<td><code>deploy/docker-compose.yml</code></td>
+</tr>
+<tr>
+<td>Env</td>
+<td><code>deploy/.env.example</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="endpoints-productosservicios">Endpoints productos/servicios</h2>
+<pre><code>GET    /api/productos?bajoStock=true    (alerta de stock mínimo)
+GET    /api/productos/:id
+POST   /api/productos                  (rol ADMIN)
+PATCH  /api/productos/:id              (rol ADMIN)
+PATCH  /api/productos/:id/reponer      (rol ADMIN, suma stock)
+
+GET    /api/servicios
+POST   /api/servicios                  (rol ADMIN)
+</code></pre>
+<h2 id="endpoints-facturas">Endpoints facturas</h2>
+<pre><code>GET    /api/facturas?fecha=
+GET    /api/facturas/:id               (incluye items)
+POST   /api/facturas/:id/pagar         (rol RECEPCION o ADMIN)
+POST   /api/facturas/:id/anular        (rol ADMIN, con motivo)
+</code></pre>
+<h2 id="worker">Worker</h2>
+<p>Polling cada 60s. Tareas:
+1. <strong>Recordatorio 24h antes</strong> - lee notificaciones PENDIENTES con <code>fecha = hoy + 1</code> y envía email.
+2. <strong>Marcar NO_ASISTIO</strong> - citas pasadas con slot ya terminado (+15min tolerancia).</p>
+<p>Estados notificación: PENDIENTE → ENVIADA / FALLIDA → DESCARTADA (manual).</p>
+<h2 id="pruebas-del-plan">Pruebas del plan</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Esperado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST /api/productos</code> con <code>rol: RECEPCION</code></td>
+<td>403 EX-003</td>
+</tr>
+<tr>
+<td><code>PATCH /api/productos/:id/reponer {cantidad:50}</code></td>
+<td>stock_actual += 50</td>
+</tr>
+<tr>
+<td><code>GET /api/productos?bajoStock=true</code></td>
+<td>lista con stock_actual &lt;= stock_minimo</td>
+</tr>
+<tr>
+<td><code>POST /api/facturas/:id/pagar</code> ya pagada</td>
+<td>409 EX-016</td>
+</tr>
+<tr>
+<td><code>POST /api/facturas/:id/anular</code> rol VET</td>
+<td>403 EX-003</td>
+</tr>
+<tr>
+<td><code>POST /api/facturas/:id/anular</code> ADMIN</td>
+<td>estado=ANULADA, motivo registrado</td>
+</tr>
+<tr>
+<td>Worker tick con cita <code>fecha = mañana</code></td>
+<td>email enviado, notificacion=ENVIADA</td>
+</tr>
+<tr>
+<td>Worker tick con cita pasada +15min</td>
+<td>cita=NO_ASISTIO</td>
+</tr>
+</tbody>
+</table>
+<h2 id="pruebas-e2e-dia-completo">Pruebas E2E "día completo"</h2>
+<pre><code class="language-bash"># 1. Login recepcion
+TOKEN_R=$(curl -s -X POST localhost:3001/api/auth/login -H 'Content-Type: application/json' -d '{&quot;username&quot;:&quot;recep&quot;,&quot;password&quot;:&quot;recep123&quot;}' | jq -r .token)
+
+# 2. Crear dueño y mascota
+DUID=$(curl -s -X POST localhost:3001/api/duenos -H &quot;Authorization: Bearer $TOKEN_R&quot; -H 'Content-Type: application/json' -d '{&quot;dni&quot;:&quot;111&quot;,&quot;nombre&quot;:&quot;A&quot;,&quot;apellido&quot;:&quot;B&quot;}' | jq -r .id)
+MID=$(curl -s -X POST localhost:3001/api/mascotas -H &quot;Authorization: Bearer $TOKEN_R&quot; -H 'Content-Type: application/json' -d &quot;{\&quot;duenoId\&quot;:$DUID,\&quot;nombre\&quot;:\&quot;Luna\&quot;,\&quot;especie\&quot;:\&quot;perro\&quot;}&quot; | jq -r .id)
+
+# 3. Agendar cita
+CID=$(curl -s -X POST localhost:3001/api/citas -H &quot;Authorization: Bearer $TOKEN_R&quot; -H 'Content-Type: application/json' -d &quot;{\&quot;mascotaId\&quot;:$MID,\&quot;fecha\&quot;:\&quot;2026-07-25\&quot;,\&quot;horaInicio\&quot;:\&quot;10:00\&quot;,\&quot;horaFin\&quot;:\&quot;10:30\&quot;,\&quot;tipoServicio\&quot;:\&quot;CONSULTA\&quot;,\&quot;motivo\&quot;:\&quot;Chequeo\&quot;}&quot; | jq -r .id)
+
+# 4. Login vet
+TOKEN_V=$(curl -s -X POST localhost:3001/api/auth/login -H 'Content-Type: application/json' -d '{&quot;username&quot;:&quot;vet&quot;,&quot;password&quot;:&quot;vet123&quot;}' | jq -r .token)
+
+# 5. Abrir consulta
+CONID=$(curl -s -X POST localhost:3001/api/citas/$CID/consulta -H &quot;Authorization: Bearer $TOKEN_V&quot; -H 'Content-Type: application/json' -d '{&quot;sintomas&quot;:&quot;s&quot;,&quot;diagnostico&quot;:&quot;d&quot;}' | jq -r .id)
+
+# 6. Servicio
+curl -s -X POST localhost:3001/api/consultas/$CONID/servicios -H &quot;Authorization: Bearer $TOKEN_V&quot; -H 'Content-Type: application/json' -d '{&quot;servicioId&quot;:1,&quot;cantidad&quot;:1}'
+
+# 7. Prescripción
+curl -s -X POST localhost:3001/api/consultas/$CONID/prescripciones -H &quot;Authorization: Bearer $TOKEN_V&quot; -H 'Content-Type: application/json' -d '{&quot;productoId&quot;:1,&quot;cantidad&quot;:3}'
+
+# 8. Finalizar
+curl -s -X POST localhost:3001/api/consultas/$CONID/finalizar -H &quot;Authorization: Bearer $TOKEN_V&quot;
+
+# 9. Pagar
+curl -s -X POST localhost:3001/api/facturas/1/pagar -H &quot;Authorization: Bearer $TOKEN_R&quot;
+</code></pre>
+<h2 id="despliegue">Despliegue</h2>
+<pre><code class="language-bash">cp deploy/.env.example deploy/.env
+docker compose -f deploy/docker-compose.yml up -d
+# Mailhog UI: http://localhost:8025
+# API: http://localhost:3001/api/health
+</code></pre></div>
+<div class="section-title">FASE DE TRANSICIÓN (Transition)</div>
+<div class="doc-title">Fase Transición - VetSys</div>
+<div class="doc-meta">docs/fase-transicion/README.md</div>
+<div class="doc-content"><p>Entregables finales: demo guion, manuales de implantación, migración, operación y administración.</p>
+<h2 id="documentos">Documentos</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Documento</th>
+<th>Audiencia</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td><a href="./01-guion-demo.md">Guion de Demo</a></td>
+<td>Equipo presentador + profesor</td>
+</tr>
+<tr>
+<td>02</td>
+<td><a href="./02-implantacion-docker.md">Manual de Implantación</a></td>
+<td>Administrador de sistemas</td>
+</tr>
+<tr>
+<td>03</td>
+<td><a href="./03-procedimiento-migracion.md">Procedimiento de Migración</a></td>
+<td>Implementador / TI</td>
+</tr>
+<tr>
+<td>04</td>
+<td><a href="./04-manual-operacion.md">Manual de Operación</a></td>
+<td>Recepción / Veterinario / Caja</td>
+</tr>
+<tr>
+<td>05</td>
+<td><a href="./05-manual-administrador.md">Manual del Administrador</a></td>
+<td>Administrador del sistema</td>
+</tr>
+</tbody>
+</table>
+<h2 id="resumen-ejecutivo">Resumen ejecutivo</h2>
+<p>VetSys cumple los requisitos de la materia:</p>
+<ul>
+<li>4 fases RUP con artefactos completos.</li>
+<li>UML detallado (clases, casos de uso, secuencia, estados, componentes, despliegue, ER).</li>
+<li>DSI con catálogo de excepciones, requisitos de operación y seguridad.</li>
+<li>Modelo físico relacional estricto en PostgreSQL 16.</li>
+<li>Backend funcional en Bun + Elysia + TypeScript.</li>
+<li>Worker de notificaciones SMTP.</li>
+<li>Despliegue con Docker Compose.</li>
+<li>Demo guionizada para presentación final.</li>
+</ul></div>
+<div class="doc-title">Demo Final - Día en la Clínica</div>
+<div class="doc-meta">docs/fase-transicion/01-guion-demo.md</div>
+<div class="doc-content"><p><strong>Fase:</strong> Transición
+<strong>Duración estimada:</strong> 15 minutos
+<strong>Formato:</strong> Roleplay en vivo. Sin mostrar código al profesor.
+<strong>Roles:</strong> Recepción / Veterinario / Caja (operador con permisos de pago) / Administrador</p>
+<hr />
+<h2 id="pre-requisitos-antes-de-la-presentacion">Pre-requisitos (antes de la presentación)</h2>
+<ol>
+<li>Servidor arriba: <code>docker compose ps</code> muestra los 4 servicios en estado <code>healthy</code>/<code>running</code>.</li>
+<li>Mailhog UI abierto en <code>http://localhost:8025</code> (proyector secundario).</li>
+<li>Tres ventanas de navegador con sesión iniciada:
+   - Pestaña A (Recepción).
+   - Pestaña B (Veterinario).
+   - Pestaña C (Caja / Admin).</li>
+<li>Base de datos recién cargada con seed (servicios, productos, 1 dueño demo, 1 mascota demo).</li>
+<li>Credenciales:
+   - <code>recep / recep123</code>
+   - <code>vet / vet123</code>
+   - <code>admin / admin123</code></li>
+<li>Impresora PDF funcional o exportar a <code>.pdf</code> para entregar factura impresa.</li>
+</ol>
+<hr />
+<h2 id="acto-1-apertura-1-min">Acto 1 - Apertura (1 min)</h2>
+<p><strong>Narrador:</strong> "Buenos días. Hoy simulamos un día de operación en una clínica veterinaria pequeña que usa VetSys."</p>
+<p><strong>Pantalla:</strong> Dashboard del sistema. Tablero con KPIs del día.</p>
+<hr />
+<h2 id="acto-2-cliente-sin-cita-previa-5-min">Acto 2 - Cliente sin cita previa (5 min)</h2>
+<h3 id="paso-1-llega-cliente-nuevo">Paso 1 - Llega cliente nuevo</h3>
+<p><strong>Actor Recepción:</strong>
+- Abre pestaña Recepción.
+- Cliente dice: "Buenos días, mi perra Luna está decaída, ¿la pueden atender?"
+- Recepción busca por DNI del dueño: <code>12345678</code>.</p>
+<h3 id="paso-2-no-existe-registrar">Paso 2 - No existe → registrar</h3>
+<ul>
+<li>Pantalla muestra "no encontrado".</li>
+<li>Pulsa "+ Registrar dueño".</li>
+<li>Completa: nombre, apellido, teléfono, email.</li>
+<li>Confirma.</li>
+</ul>
+<h3 id="paso-3-registrar-mascota">Paso 3 - Registrar mascota</h3>
+<ul>
+<li>Tras crear dueño, pantalla salta a "+ Registrar mascota".</li>
+<li>Completa: nombre "Luna", especie "perro", raza, sexo "HEMBRA", peso aprox.</li>
+</ul>
+<h3 id="paso-4-agendar-cita">Paso 4 - Agendar cita</h3>
+<ul>
+<li>Calendario del día. Selecciona slot 10:00 con Dr. Pérez.</li>
+<li>Tipo servicio: "Consulta".</li>
+<li>Motivo: "Decaimiento general".</li>
+<li>Confirma.</li>
+<li><strong>Pantalla muestra resumen de cita + ID + estado PROGRAMADA.</strong></li>
+</ul>
+<h3 id="paso-5-notificacion-programada">Paso 5 - Notificación programada</h3>
+<ul>
+<li><strong>Narrador:</strong> "El sistema ya agendó un recordatorio automático 24h antes por correo."</li>
+<li>(Si la cita es para mañana, abrir Mailhog y mostrar email pendiente).</li>
+</ul>
+<hr />
+<h2 id="acto-3-atencion-veterinaria-5-min">Acto 3 - Atención Veterinaria (5 min)</h2>
+<h3 id="paso-6-veterinario-abre-consulta">Paso 6 - Veterinario abre consulta</h3>
+<p><strong>Actor Veterinario:</strong>
+- Pestaña B. Login.
+- Ve panel "Citas de hoy".
+- Abre cita 10:00.
+- Pulsa "Iniciar consulta".</p>
+<h3 id="paso-7-sintomas-y-diagnostico">Paso 7 - Síntomas y diagnóstico</h3>
+<ul>
+<li>Completa síntomas: "Decaimiento, vómitos".</li>
+<li>Diagnóstico: "Gastritis leve".</li>
+<li>Tratamiento: "Dieta + medicación".</li>
+</ul>
+<h3 id="paso-8-servicios">Paso 8 - Servicios</h3>
+<ul>
+<li>"+ Servicio": selecciona "Consulta General".</li>
+<li>(Opcional) "+ Servicio": "Aplicación de suero".</li>
+</ul>
+<h3 id="paso-9-prescripcion">Paso 9 - Prescripción</h3>
+<ul>
+<li>"+ Medicamento": busca "Antiemético 50mg".</li>
+<li>Cantidad: 6 comprimidos. Dosis: 1 comp cada 8h. Duración: 2 días.</li>
+<li>Pulsa "Agregar".</li>
+</ul>
+<h3 id="paso-10-provocar-ex-011-demostracion-de-validacion">Paso 10 - Provocar EX-011 (demostración de validación)</h3>
+<ul>
+<li>"+ Medicamento": "Vacuna Antirrábica" → cantidad 9999.</li>
+<li><strong>Pantalla muestra error EX-011</strong>: "Stock disponible: 60, solicitado: 9999".</li>
+<li>Recepcion corrige a 1.</li>
+</ul>
+<h3 id="paso-11-adjuntar-archivo">Paso 11 - Adjuntar archivo</h3>
+<ul>
+<li>"+ Archivo": sube radiografía.png.</li>
+<li><strong>Pantalla muestra preview + nombre guardado.</strong></li>
+</ul>
+<h3 id="paso-12-finalizar-consulta">Paso 12 - Finalizar consulta</h3>
+<ul>
+<li>Pulsa "Finalizar Consulta".</li>
+<li><strong>Pantalla muestra factura generada:</strong> número F-2026-00000001, total $52.40 (servicios + productos + 16% IVA).</li>
+<li>Cita pasa a estado ATENDIDA.</li>
+</ul>
+<hr />
+<h2 id="acto-4-cobro-en-caja-2-min">Acto 4 - Cobro en Caja (2 min)</h2>
+<h3 id="paso-13-caja-ve-factura">Paso 13 - Caja ve factura</h3>
+<p><strong>Actor Caja:</strong>
+- Pestaña C. Login como Recepción.
+- Abre "Facturas del día".
+- Selecciona factura del cliente.
+- Muestra detalle con desglose de servicios y productos.</p>
+<h3 id="paso-14-pago">Paso 14 - Pago</h3>
+<ul>
+<li>Pulsa "Cobrar".</li>
+<li>Estado cambia a PAGADA.</li>
+<li>(Opcional) Imprime/exporta PDF.</li>
+</ul>
+<h3 id="paso-15-notificacion-email">Paso 15 - Notificación email</h3>
+<ul>
+<li><strong>Narrador:</strong> "Al pagar, el sistema encola email automático al cliente con resumen."</li>
+<li>Abrir Mailhog. Mostrar email enviado con número de factura y monto.</li>
+</ul>
+<hr />
+<h2 id="acto-5-reporte-y-administracion-2-min">Acto 5 - Reporte y Administración (2 min)</h2>
+<h3 id="paso-16-reporte-diario">Paso 16 - Reporte diario</h3>
+<p><strong>Actor Administrador:</strong>
+- Pestaña C. Cambia sesión a Admin.
+- Abre "Reportes" → "Diario".
+- Muestra: 1 atención, ingresos $52.40, productos despachados, citas pendientes.</p>
+<h3 id="paso-17-anulacion-factura-caso-borde">Paso 17 - Anulación factura (caso borde)</h3>
+<ul>
+<li>"Supongamos que el cliente pagó en efectivo pero我们要emitir nota de crédito."</li>
+<li>Abre factura pagada. Pulsa "Anular". Ingresa motivo "duplicado".</li>
+<li>Estado → ANULADA.</li>
+</ul>
+<hr />
+<h2 id="cierre">Cierre</h2>
+<p><strong>Narrador:</strong> "Esto es una operación real cubierta por VetSys en menos de 15 minutos, sin papeles, sin libretas, con control de inventario y trazabilidad completa."</p>
+<hr />
+<h2 id="guion-de-preguntas-del-profesor-preparacion">Guion de preguntas del profesor (preparación)</h2>
+<table>
+<thead>
+<tr>
+<th>Pregunta esperada</th>
+<th>Respuesta corta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>¿Y si dos veterinarios atienden a la vez?</td>
+<td>RBAC + JWT por sesión, slots validados por <code>uq_cita_slot_vet</code>.</td>
+</tr>
+<tr>
+<td>¿Cómo evitan doble cobro?</td>
+<td>UNIQUE en <code>factura.consulta_id</code> + estado terminal.</td>
+</tr>
+<tr>
+<td>¿Backup?</td>
+<td><code>pg_dump</code> diario + rsync offsite + procedimiento documentado.</td>
+</tr>
+<tr>
+<td>¿Escalable?</td>
+<td>Sí, separar API en réplicas + balanceador; DB con réplicas read.</td>
+</tr>
+<tr>
+<td>¿Qué pasa si cae el servidor?</td>
+<td>RTO 4h, último dump aplicado; citas del día se pierden pero auditoría no.</td>
+</tr>
+<tr>
+<td>¿Notificaciones?</td>
+<td>Worker cron 60s + SMTP con reintentos + Mailhog en dev.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="recursos-para-llevar-a-la-presentacion">Recursos para llevar a la presentación</h2>
+<ul>
+<li>[ ] Laptop con docker-compose corriendo.</li>
+<li>[ ] Proyector (pantalla grande) + cable HDMI.</li>
+<li>[ ] Acceso a internet (por si el profesor pregunta y hay que levantar algo).</li>
+<li>[ ] PDF del documento de visión impreso (respaldo).</li>
+<li>[ ] Diagrama ER impreso (visual rápido).</li>
+</ul></div>
+<div class="doc-title">Manual de Implantación - VetSys</div>
+<div class="doc-meta">docs/fase-transicion/02-implantacion-docker.md</div>
+<div class="doc-content"><p><strong>Fase:</strong> Transición
+<strong>Objetivo:</strong> Levantar el sistema en un servidor Linux de producción.</p>
+<hr />
+<h2 id="1-requisitos-del-servidor">1. Requisitos del Servidor</h2>
+<table>
+<thead>
+<tr>
+<th>Recurso</th>
+<th>Mínimo</th>
+<th>Recomendado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OS</td>
+<td>Ubuntu 22.04 LTS / Debian 12</td>
+<td>Ubuntu 24.04 LTS</td>
+</tr>
+<tr>
+<td>CPU</td>
+<td>2 vCPUs</td>
+<td>4 vCPUs</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>4 GB</td>
+<td>8 GB</td>
+</tr>
+<tr>
+<td>Disco</td>
+<td>40 GB</td>
+<td>80 GB SSD</td>
+</tr>
+<tr>
+<td>Red</td>
+<td>100 Mbps</td>
+<td>1 Gbps</td>
+</tr>
+<tr>
+<td>Acceso</td>
+<td>SSH con sudo + IP fija</td>
+<td>SSH con clave pública</td>
+</tr>
+</tbody>
+</table>
+<p>Puertos a abrir:</p>
+<table>
+<thead>
+<tr>
+<th>Puerto</th>
+<th>Servicio</th>
+<th>Acceso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>22</td>
+<td>SSH</td>
+<td>IP admin</td>
+</tr>
+<tr>
+<td>80</td>
+<td>HTTP (reverse proxy)</td>
+<td>Público</td>
+</tr>
+<tr>
+<td>443</td>
+<td>HTTPS</td>
+<td>Público</td>
+</tr>
+<tr>
+<td>8025</td>
+<td>Mailhog UI</td>
+<td>Solo desarrollo</td>
+</tr>
+</tbody>
+</table>
+<p>PostgreSQL, API y Worker no exponen puertos al público: solo red interna Docker.</p>
+<hr />
+<h2 id="2-instalacion-base">2. Instalación Base</h2>
+<h3 id="21-instalar-docker">2.1 Instalar Docker</h3>
+<pre><code class="language-bash">sudo apt update
+sudo apt install -y ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+echo \
+  &quot;deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release &amp;&amp; echo &quot;$VERSION_CODENAME&quot;) stable&quot; | \
+  sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null
+
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+sudo usermod -aG docker $USER
+newgrp docker
+docker --version
+</code></pre>
+<h3 id="22-instalar-bun-para-correr-migraciones-locales-si-aplica">2.2 Instalar Bun (para correr migraciones locales si aplica)</h3>
+<pre><code class="language-bash">curl -fsSL https://bun.sh/install | bash
+export PATH=&quot;$HOME/.bun/bin:$PATH&quot;
+bun --version
+</code></pre>
+<hr />
+<h2 id="3-despliegue-del-sistema">3. Despliegue del Sistema</h2>
+<h3 id="31-clonar-codigo">3.1 Clonar código</h3>
+<pre><code class="language-bash">sudo mkdir -p /opt/vetsys
+sudo chown $USER:$USER /opt/vetsys
+cd /opt/vetsys
+git clone &lt;repo-url&gt; .
+</code></pre>
+<h3 id="32-configurar-variables-de-entorno">3.2 Configurar variables de entorno</h3>
+<pre><code class="language-bash">cp deploy/.env.example deploy/.env
+nano deploy/.env
+</code></pre>
+<p>Variables críticas:</p>
+<pre><code class="language-env">POSTGRES_PASSWORD=&lt;contraseña fuerte 24+ chars&gt;
+JWT_SECRET=&lt;secreto aleatorio 64+ chars&gt;
+SMTP_HOST=&lt;host SMTP real&gt;
+SMTP_PORT=587
+SMTP_USER=&lt;usuario SMTP&gt;
+SMTP_PASS=&lt;password SMTP&gt;
+SMTP_FROM=VetSys &lt;no-reply@clinica.com&gt;
+SEED_ADMIN_PASSWORD=&lt;password admin distinta a admin123&gt;
+WORKER_INTERVAL_MS=60000
+</code></pre>
+<p>Generar secretos:</p>
+<pre><code class="language-bash">openssl rand -base64 48   # para JWT_SECRET
+openssl rand -base64 32   # para POSTGRES_PASSWORD
+</code></pre>
+<h3 id="33-levantar-servicios">3.3 Levantar servicios</h3>
+<pre><code class="language-bash">cd deploy
+docker compose pull
+docker compose up -d
+docker compose ps
+docker compose logs -f api
+</code></pre>
+<h3 id="34-verificacion-post-despliegue">3.4 Verificación post-despliegue</h3>
+<pre><code class="language-bash"># Healthcheck
+curl -s http://localhost:3001/api/health
+
+# Mailhog solo en dev; en prod quitar del compose o deshabilitar puerto 8025.
+
+# Verificar contenedor DB
+docker compose exec db psql -U vetsys -d vetsys -c &quot;SELECT COUNT(*) FROM vetsys.usuario;&quot;
+</code></pre>
+<p>Resultado esperado: <code>1</code> (admin seed).</p>
+<h3 id="35-crear-usuarios-reales">3.5 Crear usuarios reales</h3>
+<pre><code class="language-bash">docker compose exec db psql -U vetsys -d vetsys
+</code></pre>
+<pre><code class="language-sql">-- Crear veterinario (la contraseña debe venir hasheada con bcrypt cost 12)
+-- En API, endpoint admin: POST /api/admin/usuarios (no implementado en MVP, hacerlo vía SQL por ahora)
+INSERT INTO vetsys.usuario (username, password_hash, nombre, rol, email)
+VALUES ('vet', '&lt;hash-bcrypt&gt;', 'Dr. Pérez', 'VETERINARIO', 'perez@clinica.com');
+
+INSERT INTO vetsys.usuario (username, password_hash, nombre, rol, email)
+VALUES ('recep', '&lt;hash-bcrypt&gt;', 'Ana Recepción', 'RECEPCION', 'ana@clinica.com');
+</code></pre>
+<p>Generar hash bcrypt desde la máquina host:</p>
+<pre><code class="language-bash">docker run --rm oven/bun:alpine bun -e &quot;
+const bcrypt = await import('bcryptjs');
+console.log(await bcrypt.default.hash('recep123', 12));
+&quot;
+</code></pre>
+<hr />
+<h2 id="4-https-y-reverse-proxy">4. HTTPS y Reverse Proxy</h2>
+<h3 id="41-con-caddy-mas-simple">4.1 Con Caddy (más simple)</h3>
+<pre><code class="language-bash">sudo apt install -y caddy
+</code></pre>
+<p><code>/etc/caddy/Caddyfile</code>:</p>
+<pre><code>vetsys.clinica.com {
+    reverse_proxy localhost:3001
+}
+</code></pre>
+<pre><code class="language-bash">sudo systemctl reload caddy
+</code></pre>
+<p>Caddy obtiene certificado TLS automático vía Let's Encrypt.</p>
+<h3 id="42-con-nginx">4.2 Con Nginx</h3>
+<pre><code class="language-nginx">server {
+    listen 443 ssl http2;
+    server_name vetsys.clinica.com;
+
+    ssl_certificate /etc/letsencrypt/live/vetsys.clinica.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/vetsys.clinica.com/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    client_max_body_size 15M;
+}
+</code></pre>
+<pre><code class="language-bash">sudo certbot --nginx -d vetsys.clinica.com
+sudo systemctl reload nginx
+</code></pre>
+<hr />
+<h2 id="5-backups">5. Backups</h2>
+<h3 id="51-cron-de-backup-logico">5.1 Cron de backup lógico</h3>
+<p><code>/opt/vetsys/scripts/backup.sh</code>:</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+set -euo pipefail
+FECHA=$(date +%Y%m%d_%H%M%S)
+DEST=/opt/vetsys/backups
+mkdir -p $DEST
+
+docker compose -f /opt/vetsys/deploy/docker-compose.yml exec -T db \
+  pg_dump -U vetsys -d vetsys -Fc &gt; $DEST/db_$FECHA.dump
+
+# Subir a storage externo (ej. S3)
+aws s3 cp $DEST/db_$FECHA.dump s3://clinica-backups/vetsys/db_$FECHA.dump
+
+# Backup de uploads
+tar -czf $DEST/uploads_$FECHA.tar.gz /var/lib/docker/volumes/vetsys_uploads/
+
+# Limpieza local: mantener 7 días
+find $DEST -name &quot;db_*.dump&quot; -mtime +7 -delete
+find $DEST -name &quot;uploads_*.tar.gz&quot; -mtime +7 -delete
+</code></pre>
+<pre><code class="language-bash">chmod +x /opt/vetsys/scripts/backup.sh
+sudo crontab -e
+</code></pre>
+<pre><code>0 2 * * * /opt/vetsys/scripts/backup.sh &gt;&gt; /var/log/vetsys-backup.log 2&gt;&amp;1
+</code></pre>
+<h3 id="52-restauracion">5.2 Restauración</h3>
+<pre><code class="language-bash">docker compose -f /opt/vetsys/deploy/docker-compose.yml exec -T db \
+  pg_restore -U vetsys -d vetsys --clean --if-exists &lt; /opt/vetsys/backups/db_20260720_020000.dump
+
+docker run --rm -v vetsys_uploads:/data -v /opt/vetsys/backups:/backup alpine \
+  tar -xzf /backup/uploads_20260720_020000.tar.gz -C /data
+</code></pre>
+<hr />
+<h2 id="6-monitoreo">6. Monitoreo</h2>
+<h3 id="61-healthcheck-externo">6.1 Healthcheck externo</h3>
+<p>Configurar UptimeRobot o similar contra <code>https://vetsys.clinica.com/api/health</code>.</p>
+<h3 id="62-logs">6.2 Logs</h3>
+<pre><code class="language-bash">docker compose logs -f --tail=200 api worker
+</code></pre>
+<p>Para persistencia, montar driver de logs a <code>journald</code> o <code>fluentd</code>.</p>
+<h3 id="63-disco">6.3 Disco</h3>
+<pre><code class="language-bash">df -h /
+docker system df
+</code></pre>
+<p>Alerta si <code>/</code> supera 80% o volumen <code>dbdata</code> supera 20 GB.</p>
+<hr />
+<h2 id="7-actualizacion-del-sistema">7. Actualización del Sistema</h2>
+<pre><code class="language-bash">cd /opt/vetsys
+git pull
+cd deploy
+docker compose build
+docker compose up -d
+</code></pre>
+<p>Las migraciones se ejecutan automáticamente al arrancar el contenedor <code>api</code> (entrypoint incluye <code>bun run src/db/migrate.ts</code>).</p>
+<hr />
+<h2 id="8-troubleshooting">8. Troubleshooting</h2>
+<table>
+<thead>
+<tr>
+<th>Síntoma</th>
+<th>Causa probable</th>
+<th>Solución</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API no arranca</td>
+<td>DB no lista</td>
+<td><code>docker compose logs db</code>, esperar healthcheck</td>
+</tr>
+<tr>
+<td>401 al hacer login</td>
+<td>JWT_SECRET cambiado</td>
+<td>Reiniciar API tras cambio de variable</td>
+</tr>
+<tr>
+<td>Worker no envía emails</td>
+<td>SMTP caído</td>
+<td>Verificar credenciales, revisar logs</td>
+</tr>
+<tr>
+<td>Disco lleno</td>
+<td>Backups no purgados</td>
+<td>Liberar <code>/opt/vetsys/backups</code></td>
+</tr>
+<tr>
+<td>Lentitud en consultas</td>
+<td>Índices faltantes</td>
+<td><code>EXPLAIN ANALYZE</code> en query lenta</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-checklist-post-implantacion">9. Checklist post-implantación</h2>
+<ul>
+<li>[ ] Servidor accesible por HTTPS</li>
+<li>[ ] Healthcheck responde 200</li>
+<li>[ ] Login admin funciona</li>
+<li>[ ] Usuario veterinario creado y autenticado</li>
+<li>[ ] Usuario recepción creado y autenticado</li>
+<li>[ ] Cita de prueba agendada</li>
+<li>[ ] Consulta de prueba finalizada con factura</li>
+<li>[ ] Email de prueba recibido</li>
+<li>[ ] Cron backup activo (<code>crontab -l</code>)</li>
+<li>[ ] Logs centralizados visibles</li>
+<li>[ ] Documentación entregada al cliente</li>
+</ul></div>
+<div class="doc-title">Procedimiento de Migración y Carga Inicial - VetSys</div>
+<div class="doc-meta">docs/fase-transicion/03-procedimiento-migracion.md</div>
+<div class="doc-content"><p><strong>Fase:</strong> Transición
+<strong>Audiencia:</strong> Administrador de sistemas / Implementador</p>
+<hr />
+<h2 id="1-escenarios-de-migracion-soportados">1. Escenarios de Migración Soportados</h2>
+<table>
+<thead>
+<tr>
+<th>Escenario</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Instalación limpia</strong></td>
+<td>Clínica sin sistema previo. Carga inicial con seed.</td>
+</tr>
+<tr>
+<td><strong>Migración desde planilla</strong></td>
+<td>Cliente entrega Excel/CSV con dueños y mascotas.</td>
+</tr>
+<tr>
+<td><strong>Migración desde otro software</strong></td>
+<td>Exportar CSV/JSON y mapear a esquema.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-instalacion-limpia">2. Instalación Limpia</h2>
+<p>Pasos automáticos cubiertos por <code>db/seeds/001_seed_basico.sql</code>:</p>
+<ol>
+<li>Crear 5 servicios (consulta, vacunas, cirugía menor, control).</li>
+<li>Crear 5 productos (antibiótico, antiinflamatorio, antiparasitario, vacuna, curitas).</li>
+<li>Crear 1 usuario admin.</li>
+</ol>
+<p>Datos a capturar manualmente después:</p>
+<ul>
+<li>Lista de veterinarios reales (insertar en <code>vetsys.usuario</code> con rol <code>VETERINARIO</code>).</li>
+<li>Lista de recepcionistas reales.</li>
+<li>Parámetros de la clínica:</li>
+<li>Nombre, dirección, teléfono, RUC/RIF/NIT (para encabezado de factura).</li>
+<li>Porcentaje de impuesto (configurable vía <code>TAX_RATE</code>).</li>
+<li>Duración por defecto de slots.</li>
+</ul>
+<hr />
+<h2 id="3-migracion-desde-planilla-csv">3. Migración desde Planilla (CSV)</h2>
+<h3 id="31-estructura-esperada">3.1 Estructura esperada</h3>
+<p><strong><code>duenos.csv</code>:</strong></p>
+<pre><code class="language-csv">dni,nombre,apellido,telefono,email,direccion
+12345678,Ana,Pérez,555-1234,ana@example.com,Av. Lima 123
+</code></pre>
+<p><strong><code>mascotas.csv</code>:</strong></p>
+<pre><code class="language-csv">dueno_dni,nombre,especie,raza,fecha_nacimiento,sexo,peso_kg,microchip
+12345678,Luna,perro,Labrador,2020-05-12,HEMBRA,22.5,
+</code></pre>
+<h3 id="32-script-de-carga">3.2 Script de carga</h3>
+<p><code>scripts/migrar_csv.sh</code>:</p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+set -euo pipefail
+DB=vetsys
+USER=vetsys
+
+echo &quot;Cargando dueños...&quot;
+psql -U $USER -d $DB -c &quot;\copy vetsys.dueno(dni,nombre,apellido,telefono,email,direccion) \
+  FROM 'duenos.csv' WITH (FORMAT csv, HEADER true)&quot;
+
+echo &quot;Cargando mascotas...&quot;
+psql -U $USER -d $DB &lt;&lt;'SQL'
+CREATE TEMP TABLE tmp_mascotas (
+  dueno_dni varchar(20),
+  nombre varchar(120),
+  especie varchar(60),
+  raza varchar(120),
+  fecha_nacimiento date,
+  sexo varchar(20),
+  peso_kg numeric,
+  microchip varchar(60)
+);
+
+\copy tmp_mascotas FROM 'mascotas.csv' WITH (FORMAT csv, HEADER true)
+
+INSERT INTO vetsys.mascota
+  (dueno_id, nombre, especie, raza, fecha_nacimiento, sexo, peso_kg, microchip)
+SELECT d.id, t.nombre, t.especie, t.raza, t.fecha_nacimiento, t.sexo::sexo_mascota, t.peso_kg, t.microchip
+FROM tmp_mascotas t
+JOIN vetsys.dueno d ON d.dni = t.dueno_dni;
+
+INSERT INTO vetsys.historial_clinico (mascota_id, fecha_apertura, notas_generales)
+SELECT m.id, CURRENT_DATE, 'Historia importada de planilla'
+FROM vetsys.mascota m
+WHERE NOT EXISTS (SELECT 1 FROM vetsys.historial_clinico h WHERE h.mascota_id = m.id);
+
+DROP TABLE tmp_mascotas;
+SQL
+</code></pre>
+<h3 id="33-validacion-post-carga">3.3 Validación post-carga</h3>
+<pre><code class="language-sql">SELECT 'duenos' AS tabla, COUNT(*) FROM vetsys.dueno
+UNION ALL
+SELECT 'mascotas', COUNT(*) FROM vetsys.mascota
+UNION ALL
+SELECT 'historial_clinico', COUNT(*) FROM vetsys.historial_clinico
+UNION ALL
+SELECT 'mascotas_sin_historial',
+       (SELECT COUNT(*) FROM vetsys.mascota m
+         WHERE NOT EXISTS (SELECT 1 FROM vetsys.historial_clinico h WHERE h.mascota_id = m.id));
+</code></pre>
+<p>El último valor debe ser <code>0</code>.</p>
+<hr />
+<h2 id="4-migracion-desde-otro-software">4. Migración desde Otro Software</h2>
+<h3 id="41-tablas-equivalentes-tipicas">4.1 Tablas equivalentes típicas</h3>
+<table>
+<thead>
+<tr>
+<th>Software origen</th>
+<th>Tabla origen</th>
+<th>Mapea a</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tabla clientes</td>
+<td><code>cliente</code></td>
+<td><code>vetsys.dueno</code></td>
+</tr>
+<tr>
+<td>Tabla pacientes</td>
+<td><code>paciente</code></td>
+<td><code>vetsys.mascota</code> + <code>vetsys.historial_clinico</code></td>
+</tr>
+<tr>
+<td>Tabla visitas</td>
+<td><code>visita</code></td>
+<td><code>vetsys.cita</code> + <code>vetsys.consulta</code></td>
+</tr>
+<tr>
+<td>Tabla productos</td>
+<td><code>inventario</code></td>
+<td><code>vetsys.producto</code></td>
+</tr>
+<tr>
+<td>Tabla servicios</td>
+<td><code>catalogo_servicios</code></td>
+<td><code>vetsys.servicio</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-proceso-general">4.2 Proceso general</h3>
+<ol>
+<li>Solicitar dump del sistema origen (CSV, SQL o JSON).</li>
+<li>Mapear columnas origen → destino.</li>
+<li>Generar archivo SQL de inserción con IDs controlados.</li>
+<li>Validar conteos antes y después.</li>
+<li>Backup de la base nueva antes de importar.</li>
+<li>Smoke test con 5 dueños y mascotas cargados.</li>
+</ol>
+<h3 id="43-consideraciones-especiales">4.3 Consideraciones especiales</h3>
+<ul>
+<li><strong>Historial clínico anterior</strong>: requiere campo de texto libre; mapear a <code>entrada_historial.tipo = 'IMPORTADO'</code>.</li>
+<li><strong>Stock inicial</strong>: ajustar <code>stock_actual</code> al conteo físico real.</li>
+<li><strong>Fechas</strong>: validar zona horaria (PostgreSQL usa UTC por defecto).</li>
+</ul>
+<hr />
+<h2 id="5-carga-inicial-de-parametros">5. Carga Inicial de Parámetros</h2>
+<p>Tras levantar el sistema, configurar:</p>
+<pre><code class="language-sql">-- Duración por defecto de slots (variable de entorno, no SQL)
+-- En deploy/.env: SLOT_DURACION_MIN=30
+
+-- Impuesto
+-- En deploy/.env: TAX_RATE=0.16
+
+-- Catálogo personalizado de servicios
+INSERT INTO vetsys.servicio (codigo, nombre, precio, duracion_minutos) VALUES
+  ('CONS-ESP', 'Consulta Especializada', 50.00, 45);
+
+-- Catálogo personalizado de productos
+INSERT INTO vetsys.producto (sku, nombre, precio_venta, stock_actual, stock_minimo) VALUES
+  ('MED-CUSTOM-1', 'Producto Personalizado X', 5.00, 30, 10);
+</code></pre>
+<hr />
+<h2 id="6-verificacion-final">6. Verificación Final</h2>
+<pre><code class="language-bash"># 1. Conteo por tabla
+docker compose exec db psql -U vetsys -d vetsys -c &quot;
+SELECT 'dueno' AS t, COUNT(*) FROM vetsys.dueno UNION ALL
+SELECT 'mascota', COUNT(*) FROM vetsys.mascota UNION ALL
+SELECT 'historial_clinico', COUNT(*) FROM vetsys.historial_clinico UNION ALL
+SELECT 'usuario', COUNT(*) FROM vetsys.usuario UNION ALL
+SELECT 'servicio', COUNT(*) FROM vetsys.servicio UNION ALL
+SELECT 'producto', COUNT(*) FROM vetsys.producto;&quot;
+
+# 2. Probar login
+curl -s -X POST https://vetsys.clinica.com/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{&quot;username&quot;:&quot;admin&quot;,&quot;password&quot;:&quot;&lt;admin-password&gt;&quot;}'
+
+# 3. Agendar cita de prueba
+# ... (usar curl de iteración 1)
+</code></pre>
+<p>Si todas las verificaciones pasan, sistema listo para producción.</p>
+<hr />
+<h2 id="7-rollback">7. Rollback</h2>
+<p>Si出现问题 tras la carga inicial:</p>
+<pre><code class="language-bash"># Restaurar dump previo
+docker compose down
+docker volume rm vetsys_dbdata
+docker compose up -d db
+# Esperar healthcheck
+docker compose exec db createdb -U vetsys vetsys
+# Restaurar desde backup más reciente
+docker compose exec -T db pg_restore -U vetsys -d vetsys --clean --if-exists &lt; backup.dump
+docker compose up -d api worker
+</code></pre>
+<hr />
+<h2 id="8-auditoria-de-migracion">8. Auditoría de Migración</h2>
+<p>Documentar en bitácora:</p>
+<ul>
+<li>Fecha y hora de la migración.</li>
+<li>Responsable (nombre + firma).</li>
+<li>Origen (archivo, sistema, planilla).</li>
+<li>Conteo de registros importados por tabla.</li>
+<li>Incidencias encontradas.</li>
+<li>Validación final firmada.</li>
+</ul></div>
+<div class="doc-title">Manual de Operación - VetSys</div>
+<div class="doc-meta">docs/fase-transicion/04-manual-operacion.md</div>
+<div class="doc-content"><p><strong>Fase:</strong> Transición
+<strong>Audiencia:</strong> Recepción / Caja / Veterinario (usuarios del sistema)</p>
+<hr />
+<h2 id="1-inicio-de-sesion">1. Inicio de Sesión</h2>
+<ol>
+<li>Abrir navegador en <code>https://vetsys.clinica.com</code>.</li>
+<li>Ingresar usuario y contraseña.</li>
+<li>Pulsa "Ingresar".</li>
+<li>El sistema recuerda la sesión por 8 horas.</li>
+</ol>
+<p><strong>Cambio de contraseña (próxima iteración):</strong> menú usuario → "Cambiar contraseña".</p>
+<p><strong>Recuperación de contraseña:</strong> contactar al administrador. El admin la resetea y le entrega una temporal.</p>
+<hr />
+<h2 id="2-recepcion-operaciones-diarias">2. Recepción - Operaciones Diarias</h2>
+<h3 id="21-registrar-dueno-nuevo">2.1 Registrar dueño nuevo</h3>
+<ol>
+<li>Menú → Pacientes → "+ Nuevo dueño".</li>
+<li>Completar DNI, nombre, apellido, teléfono, email (opcional), dirección (opcional).</li>
+<li>Confirmar.</li>
+</ol>
+<h3 id="22-registrar-mascota">2.2 Registrar mascota</h3>
+<ol>
+<li>Desde la ficha del dueño → "+ Nueva mascota".</li>
+<li>Completar nombre, especie, raza, fecha nacimiento, sexo, peso.</li>
+<li>(Opcional) Microchip si tiene.</li>
+<li>Confirmar. <strong>El sistema crea automáticamente el historial clínico.</strong></li>
+</ol>
+<h3 id="23-agendar-cita">2.3 Agendar cita</h3>
+<ol>
+<li>Menú → Agenda → "+ Nueva cita".</li>
+<li>Buscar mascota por DNI del dueño o nombre de mascota.</li>
+<li>Seleccionar fecha, hora y veterinario.</li>
+<li>Tipo: Consulta / Vacuna / Cirugía / Control / Otro.</li>
+<li>Motivo (mínimo 5 caracteres).</li>
+<li>Confirmar.</li>
+</ol>
+<p><strong>Códigos de error frecuentes:</strong></p>
+<ul>
+<li><code>EX-009</code> - Slot ocupado: cambiar hora o veterinario.</li>
+<li><code>EX-007</code> - DNI duplicado: verificar si el dueño ya existe.</li>
+</ul>
+<h3 id="24-reprogramar-cita">2.4 Reprogramar cita</h3>
+<ol>
+<li>Abrir cita desde el calendario.</li>
+<li>Pulsa "Reprogramar".</li>
+<li>Elegir nueva fecha y hora.</li>
+<li>Ingresar motivo de reprogramación.</li>
+<li>Confirmar.</li>
+</ol>
+<h3 id="25-cancelar-cita">2.5 Cancelar cita</h3>
+<ol>
+<li>Abrir cita.</li>
+<li>Pulsa "Cancelar".</li>
+<li>Confirmar e ingresar motivo.</li>
+<li><strong>Las citas ATENDIDAS no se pueden cancelar</strong> (EX-010).</li>
+</ol>
+<hr />
+<h2 id="3-veterinario-atencion-clinica">3. Veterinario - Atención Clínica</h2>
+<h3 id="31-abrir-consulta">3.1 Abrir consulta</h3>
+<ol>
+<li>Menú → Citas de hoy.</li>
+<li>Seleccionar cita.</li>
+<li>Pulsa "Iniciar consulta".</li>
+<li>La cita pasa a estado EN_CURSO.</li>
+</ol>
+<h3 id="32-registrar-sintomas-y-diagnostico">3.2 Registrar síntomas y diagnóstico</h3>
+<ul>
+<li>Completar campos obligatorios: síntomas y diagnóstico.</li>
+<li>Tratamiento y observaciones son opcionales pero recomendados.</li>
+</ul>
+<h3 id="33-agregar-servicios">3.3 Agregar servicios</h3>
+<ol>
+<li>"+ Servicio".</li>
+<li>Buscar por nombre o código.</li>
+<li>Seleccionar y confirmar.</li>
+<li>Repetir si hay más servicios.</li>
+</ol>
+<h3 id="34-prescribir-medicamento">3.4 Prescribir medicamento</h3>
+<ol>
+<li>"+ Medicamento".</li>
+<li>Buscar producto por nombre o SKU.</li>
+<li>Indicar cantidad, dosis, frecuencia, duración.</li>
+<li>Confirmar.</li>
+</ol>
+<p><strong>Si el sistema muestra EX-011:</strong> stock insuficiente. Ajustar cantidad o elegir otro producto.</p>
+<h3 id="35-adjuntar-archivos">3.5 Adjuntar archivos</h3>
+<ol>
+<li>"+ Archivo".</li>
+<li>Arrastrar imagen o PDF (máx 10 MB, formatos: PNG, JPEG, WEBP, PDF).</li>
+<li>Confirmar.</li>
+</ol>
+<h3 id="36-finalizar-consulta">3.6 Finalizar consulta</h3>
+<ol>
+<li>Pulsa "Finalizar Consulta".</li>
+<li>El sistema:
+   - Genera factura con número correlativo.
+   - Descuenta stock definitivamente.
+   - Actualiza historial clínico.
+   - Cambia cita a ATENDIDA.</li>
+</ol>
+<hr />
+<h2 id="4-caja-cobro">4. Caja - Cobro</h2>
+<h3 id="41-ver-factura-del-dia">4.1 Ver factura del día</h3>
+<ol>
+<li>Menú → Facturación.</li>
+<li>Lista de facturas del día (por defecto).</li>
+<li>Seleccionar factura.</li>
+</ol>
+<h3 id="42-cobrar">4.2 Cobrar</h3>
+<ol>
+<li>Abrir factura.</li>
+<li>Verificar desglose: servicios + productos + impuestos.</li>
+<li>Pulsa "Cobrar".</li>
+<li>Estado cambia a PAGADA.</li>
+</ol>
+<p><strong>Opcional:</strong> exportar PDF o imprimir.</p>
+<h3 id="43-anular-factura-solo-administrador">4.3 Anular factura (solo Administrador)</h3>
+<ol>
+<li>Abrir factura.</li>
+<li>Pulsa "Anular".</li>
+<li>Ingresar motivo.</li>
+<li>Confirmar. Estado → ANULADA.</li>
+</ol>
+<p><strong>Importante:</strong> factura anulada no se elimina; queda en bitácora.</p>
+<hr />
+<h2 id="5-mensajes-al-usuario-catalogo-resumido">5. Mensajes al Usuario (catálogo resumido)</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Significado para el usuario</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EX-001</td>
+<td>Usuario o contraseña incorrectos</td>
+</tr>
+<tr>
+<td>EX-003</td>
+<td>No tiene permisos para esta acción</td>
+</tr>
+<tr>
+<td>EX-007</td>
+<td>Ya existe un dueño con ese DNI</td>
+</tr>
+<tr>
+<td>EX-009</td>
+<td>Ese horario ya está ocupado</td>
+</tr>
+<tr>
+<td>EX-010</td>
+<td>La cita ya no se puede modificar</td>
+</tr>
+<tr>
+<td>EX-011</td>
+<td>No hay suficiente stock</td>
+</tr>
+<tr>
+<td>EX-013</td>
+<td>Complete síntomas y diagnóstico</td>
+</tr>
+<tr>
+<td>EX-021</td>
+<td>Archivo demasiado grande (máx 10 MB)</td>
+</tr>
+<tr>
+<td>EX-022</td>
+<td>Tipo de archivo no permitido</td>
+</tr>
+</tbody>
+</table>
+<p>Si aparece un código no listado, copiar y enviar al administrador.</p>
+<hr />
+<h2 id="6-buenas-practicas">6. Buenas Prácticas</h2>
+<ul>
+<li>Cerrar sesión al ausentarse del equipo.</li>
+<li>Verificar el resumen antes de "Finalizar Consulta".</li>
+<li>No modificar datos de facturas ya pagadas sin autorización.</li>
+<li>Mantener contraseñas privadas (no compartir).</li>
+<li>Reportar al admin cualquier anomalía (lentitud, errores repetidos).</li>
+</ul></div>
+<div class="doc-title">Manual del Administrador - VetSys</div>
+<div class="doc-meta">docs/fase-transicion/05-manual-administrador.md</div>
+<div class="doc-content"><p><strong>Fase:</strong> Transición
+<strong>Audiencia:</strong> Administrador del sistema / Responsable de TI</p>
+<hr />
+<h2 id="1-responsabilidades-del-administrador">1. Responsabilidades del Administrador</h2>
+<ul>
+<li>Gestionar usuarios y roles.</li>
+<li>Mantener catálogo de servicios y productos.</li>
+<li>Configurar parámetros globales (impuesto, SMTP, intervalos).</li>
+<li>Supervisar backups.</li>
+<li>Monitorear logs y métricas.</li>
+<li>Ejecutar actualizaciones.</li>
+<li>Responder a incidentes de seguridad.</li>
+</ul>
+<hr />
+<h2 id="2-gestion-de-usuarios">2. Gestión de Usuarios</h2>
+<h3 id="21-crear-usuario-procedimiento-sql-hasta-que-endpoint-admin-este-disponible">2.1 Crear usuario (procedimiento SQL hasta que endpoint admin esté disponible)</h3>
+<pre><code class="language-bash">docker compose exec db psql -U vetsys -d vetsys
+</code></pre>
+<pre><code class="language-sql">-- Generar hash bcrypt (desde host):
+-- docker run --rm oven/bun:alpine bun -e &quot;
+--   const b = await import('bcryptjs');
+--   console.log(await b.default.hash('password-real', 12));
+-- &quot;
+
+INSERT INTO vetsys.usuario (username, password_hash, nombre, rol, email, activo)
+VALUES (
+  'vet2',
+  '&lt;hash-bcrypt&gt;',
+  'Dra. Gómez',
+  'VETERINARIO',
+  'gomez@clinica.com',
+  TRUE
+);
+</code></pre>
+<h3 id="22-cambiar-rol">2.2 Cambiar rol</h3>
+<pre><code class="language-sql">UPDATE vetsys.usuario SET rol = 'VETERINARIO' WHERE username = 'vet2';
+</code></pre>
+<h3 id="23-desactivar-usuario">2.3 Desactivar usuario</h3>
+<pre><code class="language-sql">UPDATE vetsys.usuario SET activo = FALSE WHERE username = 'vet_antiguo';
+</code></pre>
+<p>El usuario no podrá hacer login pero su histórico se preserva.</p>
+<h3 id="24-resetear-contrasena">2.4 Resetear contraseña</h3>
+<pre><code class="language-sql">UPDATE vetsys.usuario
+   SET password_hash = '&lt;nuevo-hash-bcrypt&gt;'
+ WHERE username = 'recep';
+</code></pre>
+<p>Comunicar nueva contraseña por canal seguro. Pedir cambio al primer login.</p>
+<hr />
+<h2 id="3-catalogo-de-servicios-y-productos">3. Catálogo de Servicios y Productos</h2>
+<h3 id="31-agregar-servicio">3.1 Agregar servicio</h3>
+<pre><code class="language-sql">INSERT INTO vetsys.servicio (codigo, nombre, descripcion, precio, duracion_minutos)
+VALUES ('CIR-MAY', 'Cirugía Mayor', 'Procedimiento quirúrgico con internación', 350.00, 120);
+</code></pre>
+<h3 id="32-actualizar-precio-de-producto">3.2 Actualizar precio de producto</h3>
+<pre><code class="language-sql">UPDATE vetsys.producto SET precio_venta = 1.75 WHERE sku = 'MED-ABX-250';
+</code></pre>
+<p><strong>Advertencia:</strong> los precios históricos quedan en <code>consulta_servicio.precio_cobrado</code> y <code>prescripcion.precio_unitario_cobrado</code> (no se modifican retroactivamente).</p>
+<h3 id="33-reponer-stock">3.3 Reponer stock</h3>
+<pre><code class="language-sql">UPDATE vetsys.producto SET stock_actual = stock_actual + 100 WHERE sku = 'MED-ABX-250';
+</code></pre>
+<h3 id="34-desactivar-producto">3.4 Desactivar producto</h3>
+<pre><code class="language-sql">UPDATE vetsys.producto SET activo = FALSE WHERE sku = 'MED-VIEJO';
+</code></pre>
+<p>Productos inactivos no se pueden prescribir (EX-012).</p>
+<hr />
+<h2 id="4-parametros-globales">4. Parámetros Globales</h2>
+<p>Editables vía <code>deploy/.env</code>:</p>
+<pre><code class="language-env">TAX_RATE=0.16            # Porcentaje de impuesto (0.16 = 16% IVA)
+WORKER_INTERVAL_MS=60000 # Frecuencia del worker (60s por defecto)
+</code></pre>
+<p>Tras cambiar, reiniciar:</p>
+<pre><code class="language-bash">docker compose restart api worker
+</code></pre>
+<hr />
+<h2 id="5-backups">5. Backups</h2>
+<h3 id="51-verificar-ultimo-backup">5.1 Verificar último backup</h3>
+<pre><code class="language-bash">ls -lht /opt/vetsys/backups/ | head -5
+</code></pre>
+<h3 id="52-ejecutar-backup-manual">5.2 Ejecutar backup manual</h3>
+<pre><code class="language-bash">/opt/vetsys/scripts/backup.sh
+</code></pre>
+<h3 id="53-restaurar-desde-backup">5.3 Restaurar desde backup</h3>
+<p>Ver <code>02-implantacion-docker.md</code> sección 5.2.</p>
+<h3 id="54-verificar-integridad-del-dump">5.4 Verificar integridad del dump</h3>
+<pre><code class="language-bash">docker compose exec -T db pg_restore -l /opt/vetsys/backups/db_$(date +%Y%m%d).dump
+</code></pre>
+<p>Si lista contenido sin errores, el dump es válido.</p>
+<hr />
+<h2 id="6-monitoreo">6. Monitoreo</h2>
+<h3 id="61-healthcheck">6.1 Healthcheck</h3>
+<pre><code class="language-bash">curl -s https://vetsys.clinica.com/api/health | jq
+</code></pre>
+<p>Salida esperada:</p>
+<pre><code class="language-json">{
+  &quot;ok&quot;: true,
+  &quot;db&quot;: true,
+  &quot;timestamp&quot;: &quot;2026-07-19T10:30:00.000Z&quot;
+}
+</code></pre>
+<h3 id="62-logs-de-aplicacion">6.2 Logs de aplicación</h3>
+<pre><code class="language-bash">docker compose logs -f --tail=200 api worker
+</code></pre>
+<p>Para errores específicos de una consulta:</p>
+<pre><code class="language-bash">docker compose logs api | grep &quot;EX-011&quot; | tail -20
+</code></pre>
+<h3 id="63-disco-y-memoria">6.3 Disco y memoria</h3>
+<pre><code class="language-bash">df -h /
+free -h
+docker system df
+</code></pre>
+<h3 id="64-conexiones-activas-db">6.4 Conexiones activas DB</h3>
+<pre><code class="language-sql">SELECT datname, usename, application_name, state, count(*)
+FROM pg_stat_activity
+WHERE datname = 'vetsys'
+GROUP BY 1,2,3,4;
+</code></pre>
+<p>Si <code>count &gt; 50</code>, considerar pool más grande.</p>
+<hr />
+<h2 id="7-catalogo-de-excepciones-referencia-rapida">7. Catálogo de Excepciones - Referencia Rápida</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Severidad</th>
+<th>Acción admin</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EX-017</td>
+<td>Alta</td>
+<td>DB caída: revisar contenedor db, restaurar backup</td>
+</tr>
+<tr>
+<td>EX-020</td>
+<td>Alta</td>
+<td>Deadlock: revisar índice faltante en queries</td>
+</tr>
+<tr>
+<td>EX-023</td>
+<td>Alta</td>
+<td>Disco lleno: liberar espacio, revisar volumen uploads</td>
+</tr>
+<tr>
+<td>EX-024</td>
+<td>Media</td>
+<td>SMTP caído: verificar credenciales, cambiar host</td>
+</tr>
+<tr>
+<td>EX-026</td>
+<td>Alta</td>
+<td>Saturación: escalar servidor</td>
+</tr>
+<tr>
+<td>EX-028</td>
+<td>Alta</td>
+<td>SQL injection detectado: bloquear IP, auditar logs</td>
+</tr>
+<tr>
+<td>EX-029</td>
+<td>Alta</td>
+<td>Login sospechoso: revisar intentos fallidos</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-actualizacion-del-sistema">8. Actualización del Sistema</h2>
+<pre><code class="language-bash">cd /opt/vetsys
+git pull origin main
+cd deploy
+docker compose build
+docker compose up -d
+</code></pre>
+<p>Verificar:</p>
+<pre><code class="language-bash">docker compose ps
+curl -s https://vetsys.clinica.com/api/health
+</code></pre>
+<p>Si hay nueva migración, se aplica automáticamente al arrancar el contenedor <code>api</code>.</p>
+<hr />
+<h2 id="9-respuesta-a-incidentes">9. Respuesta a Incidentes</h2>
+<h3 id="91-robo-de-credenciales-admin">9.1 Robo de credenciales admin</h3>
+<ol>
+<li>Cambiar <code>JWT_SECRET</code> en <code>.env</code>.</li>
+<li>Reiniciar <code>api</code>.</li>
+<li>Resetear contraseña del usuario afectado.</li>
+<li>Auditar accesos recientes:</li>
+</ol>
+<pre><code class="language-sql">-- (Si se implementa tabla auditoria_evento)
+SELECT * FROM auditoria_evento
+WHERE usuario_id = X
+  AND timestamp &gt; NOW() - INTERVAL '7 days'
+ORDER BY timestamp DESC;
+</code></pre>
+<h3 id="92-caida-de-db">9.2 Caída de DB</h3>
+<ol>
+<li><code>docker compose ps db</code> para ver estado.</li>
+<li><code>docker compose logs db</code> para error.</li>
+<li>Si no levanta: restaurar último backup (procedimiento sección 5.3).</li>
+</ol>
+<h3 id="93-disco-lleno">9.3 Disco lleno</h3>
+<ol>
+<li><code>docker system prune -a</code> (cuidado: borra imágenes no usadas).</li>
+<li>Reducir retención de backups.</li>
+<li>Mover backups antiguos a storage externo.</li>
+</ol>
+<hr />
+<h2 id="10-normas-de-administracion-de-bd">10. Normas de Administración de BD</h2>
+<ul>
+<li><strong>Nunca</strong> ejecutar <code>DROP TABLE</code> en producción sin backup verificado.</li>
+<li><strong>Siempre</strong> probar queries destructivas en staging.</li>
+<li><strong>No</strong> deshabilitar FKs ni constraints sin justificación documentada.</li>
+<li><strong>Sí</strong> usar <code>EXPLAIN ANALYZE</code> antes de agregar índices.</li>
+<li><strong>Sí</strong> documentar todo cambio DDL en bitácora.</li>
+</ul></div>
+<div class="section-title">PROTOTIPO ARQUITECTÓNICO (código)</div>
+<div class="doc-title">consulta-flow</div>
+<div class="doc-meta">apps/backend/src/prototype/consulta-flow.ts</div>
+<div class="doc-content"><div class="code-block">/**
+ * Prototipo Arquitectónico - VetSys
+ * Fase: Elaboración (RUP)
+ * Flujo crítico: Registrar consulta médica con descuento de inventario y pre-factura.
+ *
+ * Objetivo DSI: demostrar la lógica transaccional que cumple
+ * RN-03 (atomicidad al descontar stock) y RN-06 (factura correlativa única).
+ *
+ * Stack: Bun + Elysia + TypeScript + PostgreSQL (pg driver).
+ *
+ * Uso:
+ *   bun run prototype/consulta-flow.ts
+ */
+
+import { Pool, type PoolClient } from "pg";
+
+// ---------------------------------------------------------------------------
+// Configuración (en producción vendría de variables de entorno)
+// ---------------------------------------------------------------------------
+const PG_CONFIG = {
+  host: process.env.PGHOST ?? "localhost",
+  port: Number(process.env.PGPORT ?? 5432),
+  user: process.env.PGUSER ?? "vetsys",
+  password: process.env.PGPASSWORD ?? "vetsys",
+  database: process.env.PGDATABASE ?? "vetsys",
+};
+
+const TAX_RATE = 0.16; // 16% IVA configurable
+
+// ---------------------------------------------------------------------------
+// Tipos de entrada (DTOs)
+// ---------------------------------------------------------------------------
+
+interface PrescripcionInput {
+  productoId: number;
+  cantidad: number;
+  dosis?: string;
+  frecuencia?: string;
+  duracion?: string;
+}
+
+interface ServicioInput {
+  servicioId: number;
+  cantidad: number;
+}
+
+interface ConsultaInput {
+  citaId: number;
+  veterinarioId: number;
+  sintomas: string;
+  diagnostico: string;
+  tratamiento?: string;
+  observaciones?: string;
+  servicios: ServicioInput[];
+  prescripciones: PrescripcionInput[];
+}
+
+// ---------------------------------------------------------------------------
+// Cliente de BD (pool compartido)
+// ---------------------------------------------------------------------------
+
+export const pool = new Pool(PG_CONFIG);
+
+// ---------------------------------------------------------------------------
+ helpers SQL mínimos (en producción serían repositorios)
+// ---------------------------------------------------------------------------
+
+async function withTransaction&lt;T&gt;(
+  fn: (client: PoolClient) =&gt; Promise&lt;T&gt;,
+): Promise&lt;T&gt; {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const result = await fn(client);
+    await client.query("COMMIT");
+    return result;
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+async function fetchNextFacturaNumber(client: PoolClient): Promise&lt;string&gt; {
+  const { rows } = await client.query&lt;{ nextval: string }&gt;(
+    "SELECT nextval('factura_numero_seq') AS nextval",
+  );
+  const seq = rows[0].nextval;
+  const year = new Date().getFullYear();
+  return `F-${year}-${seq.padStart(8, "0")}`;
+}
+
+// ---------------------------------------------------------------------------
+// Núcleo del prototipo: registrarConsulta()
+// ---------------------------------------------------------------------------
+
+export interface ConsultaResult {
+  consultaId: number;
+  facturaId: number;
+  facturaNumero: string;
+  total: number;
+}
+
+export async function registrarConsulta(
+  input: ConsultaInput,
+): Promise&lt;ConsultaResult&gt; {
+  return withTransaction(async (client) =&gt; {
+    // 1) Validar cita y bloquear fila
+    const citaRes = await client.query&lt;{
+      id: number;
+      mascota_id: number;
+      dueno_id: number;
+      estado: string;
+    }&gt;(
+      `SELECT c.id, c.mascota_id, m.dueno_id, c.estado
+         FROM cita c
+         JOIN mascota m ON m.id = c.mascota_id
+        WHERE c.id = $1
+        FOR UPDATE`,
+      [input.citaId],
+    );
+    if (citaRes.rowCount === 0) throw new Error("EX-009 Cita no encontrada");
+    const cita = citaRes.rows[0];
+    if (cita.estado !== "PROGRAMADA" &amp;&amp; cita.estado !== "CONFIRMADA") {
+      throw new Error(
+        `EX-010 No se puede atender cita en estado ${cita.estado}`,
+      );
+    }
+
+    // 2) Insertar consulta (cabecera clínica)
+    if (!input.sintomas || !input.diagnostico) {
+      throw new Error("EX-013 Síntomas y diagnóstico son obligatorios");
+    }
+    const consultaRes = await client.query&lt;{ id: number }&gt;(
+      `INSERT INTO consulta
+         (cita_id, mascota_id, veterinario_id, sintomas, diagnostico, tratamiento, observaciones)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id`,
+      [
+        input.citaId,
+        cita.mascota_id,
+        input.veterinarioId,
+        input.sintomas,
+        input.diagnostico,
+        input.tratamiento ?? null,
+        input.observaciones ?? null,
+      ],
+    );
+    const consultaId = consultaRes.rows[0].id;
+
+    // 3) Registrar servicios (precio congelado)
+    for (const s of input.servicios) {
+      const svcRes = await client.query&lt;{
+        nombre: string;
+        precio: string;
+        activo: boolean;
+      }&gt;(
+        `SELECT nombre, precio, activo FROM servicio WHERE id = $1`,
+        [s.servicioId],
+      );
+      if (svcRes.rowCount === 0) throw new Error(`EX-019 Servicio ${s.servicioId} inexistente`);
+      const svc = svcRes.rows[0];
+      if (!svc.activo) throw new Error(`EX-012 Servicio ${svc.nombre} inactivo`);
+
+      await client.query(
+        `INSERT INTO consulta_servicio
+           (consulta_id, servicio_id, cantidad, precio_cobrado)
+         VALUES ($1, $2, $3, $4)`,
+        [consultaId, s.servicioId, s.cantidad, svc.precio],
+      );
+    }
+
+    // 4) Procesar prescripciones (descuento atómico de stock)
+    for (const p of input.prescripciones) {
+      // 4a) Bloquear fila del producto para evitar race conditions
+      const prodRes = await client.query&lt;{
+        id: number;
+        nombre: string;
+        stock_actual: number;
+        activo: boolean;
+        precio_venta: string;
+      }&gt;(
+        `SELECT id, nombre, stock_actual, activo, precio_venta
+           FROM producto
+          WHERE id = $1
+          FOR UPDATE`,
+        [p.productoId],
+      );
+      if (prodRes.rowCount === 0) {
+        throw new Error(`EX-019 Producto ${p.productoId} inexistente`);
+      }
+      const prod = prodRes.rows[0];
+      if (!prod.activo) {
+        throw new Error(`EX-012 Producto ${prod.nombre} inactivo`);
+      }
+      if (prod.stock_actual &lt; p.cantidad) {
+        throw new Error(
+          `EX-011 Stock insuficiente para ${prod.nombre}. Disponible: ${prod.stock_actual}, solicitado: ${p.cantidad}`,
+        );
+      }
+
+      // 4b) UPDATE del stock
+      await client.query(
+        `UPDATE producto
+            SET stock_actual = stock_actual - $1,
+                updated_at   = NOW()
+          WHERE id = $2`,
+        [p.cantidad, p.productoId],
+      );
+
+      // 4c) Insertar prescripción con precio congelado
+      await client.query(
+        `INSERT INTO prescripcion
+           (consulta_id, producto_id, cantidad, dosis, frecuencia, duracion, precio_unitario_cobrado)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [
+          consultaId,
+          p.productoId,
+          p.cantidad,
+          p.dosis ?? null,
+          p.frecuencia ?? null,
+          p.duracion ?? null,
+          prod.precio_venta,
+        ],
+      );
+    }
+
+    // 5) Calcular subtotal desde consulta_servicio + prescripcion
+    const totalesRes = await client.query&lt;{ subtotal: string }&gt;(
+      `SELECT
+         COALESCE((
+           SELECT SUM(cs.cantidad * cs.precio_cobrado)
+             FROM consulta_servicio cs
+            WHERE cs.consulta_id = $1
+         ), 0)
+       +
+         COALESCE((
+           SELECT SUM(p.cantidad * p.precio_unitario_cobrado)
+             FROM prescripcion p
+            WHERE p.consulta_id = $1
+         ), 0) AS subtotal`,
+      [consultaId],
+    );
+    const subtotal = Number(totalesRes.rows[0].subtotal);
+    const impuestos = Number((subtotal * TAX_RATE).toFixed(2));
+    const total = Number((subtotal + impuestos).toFixed(2));
+
+    // 6) Crear factura correlativa
+    const numero = await fetchNextFacturaNumber(client);
+    const facturaRes = await client.query&lt;{ id: number }&gt;(
+      `INSERT INTO factura
+         (numero, consulta_id, dueno_id, subtotal, impuestos, total, estado)
+       VALUES ($1, $2, $3, $4, $5, $6, 'EMITIDA')
+       RETURNING id`,
+      [numero, consultaId, cita.dueno_id, subtotal, impuestos, total],
+    );
+    const facturaId = facturaRes.rows[0].id;
+
+    // 7) Items de factura (servicios)
+    await client.query(
+      `INSERT INTO item_factura
+         (factura_id, tipo, ref_id, descripcion, cantidad, precio_unitario, subtotal)
+       SELECT $1, 'SERVICIO', s.id, s.nombre, cs.cantidad, cs.precio_cobrado,
+              cs.cantidad * cs.precio_cobrado
+         FROM consulta_servicio cs
+         JOIN servicio s ON s.id = cs.servicio_id
+        WHERE cs.consulta_id = $2`,
+      [facturaId, consultaId],
+    );
+
+    // 8) Items de factura (productos)
+    await client.query(
+      `INSERT INTO item_factura
+         (factura_id, tipo, ref_id, descripcion, cantidad, precio_unitario, subtotal)
+       SELECT $1, 'PRODUCTO', p.id, pr.nombre, p.cantidad, p.precio_unitario_cobrado,
+              p.cantidad * p.precio_unitario_cobrado
+         FROM prescripcion p
+         JOIN producto pr ON pr.id = p.producto_id
+        WHERE p.consulta_id = $2`,
+      [facturaId, consultaId],
+    );
+
+    // 9) Actualizar estado de cita
+    await client.query(
+      `UPDATE cita SET estado = 'ATENDIDA', updated_at = NOW() WHERE id = $1`,
+      [input.citaId],
+    );
+
+    // 10) Entrada automática en historial clínico
+    await client.query(
+      `INSERT INTO entrada_historial (historial_id, fecha, tipo, descripcion, autor_id)
+       SELECT hc.id, NOW(), 'CONSULTA',
+              $2 || ' - ' || $3,
+              $4
+         FROM historial_clinico hc
+        WHERE hc.mascota_id = $1`,
+      [
+        cita.mascota_id,
+        input.sintomas.slice(0, 100),
+        input.diagnostico.slice(0, 100),
+        input.veterinarioId,
+      ],
+    );
+
+    return {
+      consultaId,
+      facturaId,
+      facturaNumero: numero,
+      total,
+    };
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Smoke test (no se ejecuta en producción)
+// ---------------------------------------------------------------------------
+
+if (import.meta.main) {
+  const demo = await registrarConsulta({
+    citaId: 1,
+    veterinarioId: 1,
+    sintomas: "Cojera en pata trasera derecha",
+    diagnostico: "Esguince leve",
+    tratamiento: "Reposo + antiinflamatorio",
+    servicios: [{ servicioId: 1, cantidad: 1 }],
+    prescripciones: [{ productoId: 1, cantidad: 2, dosis: "1 comp", frecuencia: "12h", duracion: "5 dias" }],
+  });
+  console.log("OK consulta registrada:", demo);
+  await pool.end();
+}
+</div></div>
+</body></html>

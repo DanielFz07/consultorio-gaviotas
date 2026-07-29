@@ -1,0 +1,95 @@
+---
+import { getApiUrl } from "../../lib/api";
+import Layout from "../../layouts/Layout.astro";
+
+const user = Astro.locals.user;
+if (!user || user.rol !== "ADMIN") {
+  return Astro.redirect("/dashboard");
+}
+
+const token = Astro.cookies.get("consultorio-gaviotas_token")?.value ?? "";
+const API_URL = getApiUrl();
+
+let error: string | null = null;
+let prev = { username: "", nombre: "", email: "", rol: "RECEPCION" };
+if (Astro.request.method === "POST") {
+  const f = await Astro.request.formData();
+  prev = {
+    username: f.get("username")?.toString() ?? "",
+    nombre: f.get("nombre")?.toString() ?? "",
+    email: f.get("email")?.toString() ?? "",
+    rol: f.get("rol")?.toString() ?? "RECEPCION",
+  };
+  const body = {
+    username: prev.username,
+    password: f.get("password")?.toString() || undefined,
+    nombre: prev.nombre,
+    email: prev.email || null,
+    rol: prev.rol,
+  };
+  const res = await fetch(`${API_URL}/api/usuarios`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+  if (res.ok) {
+    const data = (await res.json()) as { id: number };
+    return Astro.redirect(`/usuarios?msg=creado`);
+  }
+  const errData = (await res.json().catch(() => ({ message: "Error" }))) as { message: string };
+  error = errData.message ?? "Error al crear";
+}
+---
+<Layout title="Nuevo usuario">
+  <a href="/usuarios" class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink mb-4 transition-colors">
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    Volver a usuarios
+  </a>
+
+  <div class="mb-6">
+    <h1 class="font-display text-3xl font-bold text-ink">Nuevo usuario</h1>
+    <p class="text-muted mt-1">Crea una cuenta nueva. El usuario podrá iniciar sesión con su username y contraseña.</p>
+  </div>
+
+  {error && (
+    <div class="mb-4 p-3.5 rounded-xl bg-danger-soft border border-danger/20 text-danger text-sm">
+      {error}
+    </div>
+  )}
+
+  <form method="POST" class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] p-8 max-w-2xl space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="nombre">Nombre completo <span class="text-danger">*</span></label>
+        <input id="nombre" name="nombre" required value={prev.nombre} class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" placeholder="Dr. Pérez" />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="username">Username <span class="text-danger">*</span></label>
+        <input id="username" name="username" required pattern="[a-zA-Z0-9_.\-]+" value={prev.username} class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all font-mono" placeholder="dperez" />
+        <div class="text-xs text-muted mt-1">Solo letras, números, guion y punto.</div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="password">Contraseña <span class="text-danger">*</span></label>
+        <input id="password" name="password" type="password" required minlength="6" class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" placeholder="Mínimo 6 caracteres" />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-ink mb-1.5" for="rol">Rol <span class="text-danger">*</span></label>
+        <select id="rol" name="rol" required class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all bg-white">
+          <option value="RECEPCION" selected={prev.rol === "RECEPCION"}>Recepción</option>
+          <option value="MEDICO" selected={prev.rol === "MEDICO"}>Médico</option>
+          <option value="ADMIN" selected={prev.rol === "ADMIN"}>Administrador</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <label class="block text-sm font-semibold text-ink mb-1.5" for="email">Email <span class="text-muted font-normal">(opcional)</span></label>
+      <input id="email" name="email" type="email" value={prev.email} class="w-full px-4 py-2.5 rounded-xl border border-line focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" placeholder="usuario@clinica.com" />
+    </div>
+    <div class="flex items-center gap-3 pt-2">
+      <button type="submit" class="btn btn-primary">Crear usuario</button>
+      <a href="/usuarios" class="btn btn-ghost">Cancelar</a>
+    </div>
+  </form>
+</Layout>

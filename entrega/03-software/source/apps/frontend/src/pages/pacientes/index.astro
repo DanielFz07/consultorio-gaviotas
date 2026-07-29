@@ -1,0 +1,141 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { api, isError } from "../../lib/api";
+
+const q = Astro.url.searchParams.get("q") ?? "";
+const cedula = Astro.url.searchParams.get("cedula") ?? "";
+const fechaNacimiento = Astro.url.searchParams.get("fechaNacimiento") ?? "";
+
+const params = new URLSearchParams();
+if (q) params.set("q", q);
+if (cedula) params.set("cedula", cedula);
+if (fechaNacimiento) params.set("fechaNacimiento", fechaNacimiento);
+const qs = params.toString();
+
+interface Paciente {
+  id: number;
+  cedula: string;
+  nombre: string;
+  apellido: string;
+  fecha_nacimiento: string | null;
+  telefono: string | null;
+  email: string | null;
+  sexo: string;
+}
+
+const r = await api.get<Paciente[]>(Astro, `/api/pacientes${qs ? `?${qs}` : ""}`);
+const pacientes = r.ok && !isError(r.data) ? r.data : [];
+
+const fmtFecha = (f: string | null) => {
+  if (!f) return "—";
+  return new Date(f).toLocaleDateString("es-VE", { year: "numeric", month: "short", day: "numeric" });
+};
+
+const calcularEdad = (f: string | null) => {
+  if (!f) return null;
+  const hoy = new Date();
+  const nac = new Date(f);
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+  return edad;
+};
+---
+<Layout title="Pacientes">
+  <header class="mb-8">
+    <div class="eyebrow mb-3">Registro clínico</div>
+    <div class="flex items-end justify-between gap-4 flex-wrap">
+      <div>
+        <h1 class="display text-4xl font-medium leading-tight">Pacientes</h1>
+        <p class="mt-2 text-base" style="color: var(--color-ink-2);">Registro digital de todas las personas atendidas en el consultorio.</p>
+      </div>
+      <a href="/pacientes/nuevo" class="btn btn-primary">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nuevo paciente
+      </a>
+    </div>
+  </header>
+
+  <!-- Filters -->
+  <form method="GET" class="card mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div>
+        <label class="block text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-gold);" for="q">Nombre o apellido</label>
+        <input id="q" name="q" value={q} placeholder="Buscar por nombre…" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-gold);" for="cedula">Cédula</label>
+        <input id="cedula" name="cedula" value={cedula} placeholder="V-12345678" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-gold);" for="fechaNacimiento">Fecha de nacimiento</label>
+        <input id="fechaNacimiento" name="fechaNacimiento" type="date" value={fechaNacimiento} />
+      </div>
+      <div class="flex items-end gap-2">
+        <button type="submit" class="btn btn-primary flex-1">Buscar</button>
+        {(q || cedula || fechaNacimiento) && (
+          <a href="/pacientes" class="btn btn-ghost">Limpiar</a>
+        )}
+      </div>
+    </div>
+  </form>
+
+  <p class="text-sm mb-4" style="color: var(--color-ink-2);">
+    <span class="font-display font-medium" style="color: var(--color-navy);">{pacientes.length}</span>
+    {pacientes.length === 1 ? "paciente" : "pacientes"}
+    {(q || cedula || fechaNacimiento) && " con los filtros aplicados"}
+  </p>
+
+  {pacientes.length === 0 ? (
+    <div class="card text-center" style="padding: 64px 24px;">
+      <div class="font-display text-2xl italic mb-3" style="color: var(--color-navy);">
+        {(q || cedula || fechaNacimiento) ? "Sin resultados." : "Aún no hay pacientes registrados."}
+      </div>
+      <p class="text-sm mb-6" style="color: var(--color-ink-2);">
+        {(q || cedula || fechaNacimiento)
+          ? "Probá con otros filtros o registrá un paciente nuevo."
+          : "Empezá registrando el primer paciente del consultorio."
+        }
+      </p>
+      <a href="/pacientes/nuevo" class="btn btn-primary inline-flex">Registrar paciente</a>
+    </div>
+  ) : (
+    <div class="card" style="padding: 0; overflow: hidden;">
+      <table class="table-premium">
+        <thead>
+          <tr>
+            <th style="width: 130px;">Cédula</th>
+            <th>Paciente</th>
+            <th>Edad</th>
+            <th>Sexo</th>
+            <th>Teléfono</th>
+            <th style="text-align: right;">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pacientes.map((p) => {
+            const edad = calcularEdad(p.fecha_nacimiento);
+            return (
+              <tr>
+                <td class="col-mono">{p.cedula}</td>
+                <td>
+                  <a href={`/pacientes/${p.id}`} style="font-weight: 500; color: var(--color-navy);">
+                    {p.apellido}, {p.nombre}
+                  </a>
+                </td>
+                <td class="col-mono" style="color: var(--color-ink-2);">{edad !== null ? `${edad} años` : "—"}</td>
+                <td>
+                  <span class="badge badge-navy">{p.sexo}</span>
+                </td>
+                <td class="col-mono" style="font-size: 13px; color: var(--color-ink-2);">{p.telefono ?? "—"}</td>
+                <td style="text-align: right;">
+                  <a href={`/pacientes/${p.id}`} class="text-xs font-semibold" style="color: var(--color-gold);">Ver →</a>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  )}
+</Layout>

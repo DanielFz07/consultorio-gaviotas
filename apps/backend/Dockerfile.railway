@@ -1,0 +1,24 @@
+FROM oven/bun:1.1-alpine
+
+WORKDIR /app
+
+# Copy package files first for better layer caching
+COPY package.json ./
+RUN bun install --production --frozen-lockfile || bun install --production
+
+# Copy source
+COPY . .
+
+# Environment defaults
+ENV PORT=3001 \
+    UPLOAD_DIR=/data/uploads \
+    TAX_RATE=0.16 \
+    NODE_ENV=production
+
+# Create uploads dir
+RUN mkdir -p /data/uploads
+
+EXPOSE 3001
+
+# Run migrations + seeds + start
+CMD ["./start.sh"]

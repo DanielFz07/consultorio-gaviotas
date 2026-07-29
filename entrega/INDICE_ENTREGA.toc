@@ -1,0 +1,9 @@
+\contentsline {section}{\numberline {1}Consultorio Las Gaviotas --- Índice de Entrega Final}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}1. Estructura de la entrega}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}2. Cómo usar esta entrega}{2}{subsection.1.2}%
+\contentsline {subsubsection}{\numberline {1.2.1}2.1 Leer los documentos}{2}{subsubsection.1.2.1}%
+\contentsline {subsubsection}{\numberline {1.2.2}2.2 Revisar el software}{3}{subsubsection.1.2.2}%
+\contentsline {subsubsection}{\numberline {1.2.3}2.3 Revisar el prototipo arquitectónico}{3}{subsubsection.1.2.3}%
+\contentsline {subsection}{\numberline {1.3}3. Mapeo con los puntos de la entrega}{3}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}4. Credenciales de acceso}{4}{subsection.1.4}%
+\contentsline {subsection}{\numberline {1.5}5. Estado del proyecto}{4}{subsection.1.5}%

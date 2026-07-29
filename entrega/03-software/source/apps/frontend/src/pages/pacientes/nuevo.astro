@@ -1,0 +1,130 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+let error: string | null = null;
+
+if (Astro.request.method === "POST") {
+  const f = await Astro.request.formData();
+  const body = {
+    cedula: f.get("cedula")?.toString() ?? "",
+    nombre: f.get("nombre")?.toString() ?? "",
+    apellido: f.get("apellido")?.toString() ?? "",
+    fechaNacimiento: f.get("fechaNacimiento")?.toString() || null,
+    telefono: f.get("telefono")?.toString() || null,
+    email: f.get("email")?.toString() || null,
+    direccion: f.get("direccion")?.toString() || null,
+    sexo: f.get("sexo")?.toString() ?? "OTRO",
+    antecedentes: f.get("antecedentes")?.toString() || null,
+    alergias: f.get("alergias")?.toString() || null,
+  };
+
+  const API_URL = import.meta.env.API_URL ?? `http://localhost:${import.meta.env.API_PORT ?? 3001}`;
+  const token = Astro.cookies.get("consultorio-gaviotas_token")?.value ?? "";
+  const res = await fetch(`${API_URL}/api/pacientes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+  if (res.ok) {
+    const data = (await res.json()) as { id: number };
+    return Astro.redirect(`/pacientes/${data.id}`);
+  }
+  const errData = (await res.json().catch(() => ({ message: "Error al crear" }))) as { code?: string; message?: string };
+  error = `${errData.code ?? "EX-099"}: ${errData.message ?? "Error al registrar paciente"}`;
+}
+---
+<Layout title="Nuevo paciente">
+  <header class="mb-8">
+    <a href="/pacientes" class="inline-flex items-center gap-1.5 text-xs font-medium mb-4" style="color: var(--color-gold);">
+      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      Volver a pacientes
+    </a>
+    <div class="eyebrow mb-3">Registro</div>
+    <h1 class="display text-4xl font-medium leading-tight">Nuevo paciente</h1>
+    <p class="mt-2 text-base" style="color: var(--color-ink-2);">Registrar una persona para su atención en el consultorio.</p>
+  </header>
+
+  <div class="card max-w-3xl" style="padding: 32px;">
+    {error && (
+      <div class="mb-6 p-3.5 rounded-md" style="background: var(--color-danger-soft); border: 1px solid var(--color-danger); color: var(--color-danger); font-size: 13px;">
+        {error}
+      </div>
+    )}
+
+    <form method="POST" class="space-y-6">
+      <!-- Identidad -->
+      <fieldset>
+        <legend class="eyebrow mb-4">Identidad</legend>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-gold);" for="cedula">Cédula *</label>
+            <input id="cedula" name="cedula" required placeholder="V-12345678" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-gold);" for="sexo">Sexo</label>
+            <select id="sexo" name="sexo">
+              <option value="OTRO">Prefiero no decir</option>
+              <option value="MASCULINO">Masculino</option>
+              <option value="FEMENINO">Femenino</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-gold);" for="nombre">Nombre *</label>
+            <input id="nombre" name="nombre" required />
+          </div>
+          <div>
+            <label class="block text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-gold);" for="apellido">Apellido *</label>
+            <input id="apellido" name="apellido" required />
+          </div>
+        </div>
+      </fieldset>
+
+      <hr style="border-color: var(--color-rule); border-top: 0;" />
+
+      <!-- Contacto -->
+      <fieldset>
+        <legend class="eyebrow mb-4">Contacto</legend>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-gold);" for="fechaNacimiento">Fecha de nacimiento</label>
+            <input id="fechaNacimiento" name="fechaNacimiento" type="date" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-gold);" for="telefono">Teléfono</label>
+            <input id="telefono" name="telefono" placeholder="0414-1234567" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-gold);" for="email">Email</label>
+            <input id="email" name="email" type="email" />
+          </div>
+        </div>
+        <div class="mt-4">
+          <label class="block text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-gold);" for="direccion">Dirección</label>
+          <input id="direccion" name="direccion" />
+        </div>
+      </fieldset>
+
+      <hr style="border-color: var(--color-rule); border-top: 0;" />
+
+      <!-- Clínica -->
+      <fieldset>
+        <legend class="eyebrow mb-4">Información clínica</legend>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-gold);" for="antecedentes">Antecedentes médicos</label>
+            <textarea id="antecedentes" name="antecedentes" rows="3" placeholder="Enfermedades previas, cirugías, condiciones crónicas…"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-gold);" for="alergias">Alergias conocidas</label>
+            <textarea id="alergias" name="alergias" rows="2" placeholder="Medicamentos, alimentos, sustancias…"></textarea>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="flex items-center gap-3 pt-2">
+        <button type="submit" class="btn btn-primary">Registrar paciente</button>
+        <a href="/pacientes" class="btn btn-ghost">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</Layout>

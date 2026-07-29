@@ -1,0 +1,119 @@
+---
+import "../styles/global.css";
+import { getApiUrl } from "../lib/api";
+
+let error: string | null = null;
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const username = form.get("username")?.toString() ?? "";
+  const password = form.get("password")?.toString() ?? "";
+  try {
+    const res = await fetch(`${getApiUrl()}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+    if (res.ok) {
+      const data = (await res.json()) as { token: string };
+      const cookieParts = [
+        `consultorio-gaviotas_token=${data.token}`,
+        "Path=/",
+        "HttpOnly",
+        "SameSite=Lax",
+        `Max-Age=${60 * 60 * 8}`,
+      ];
+      if (process.env.NODE_ENV === "production") cookieParts.push("Secure");
+      const headers = new Headers();
+      headers.set("Location", "/dashboard");
+      headers.append("Set-Cookie", cookieParts.join("; "));
+      return new Response(null, { status: 302, headers });
+    }
+    const errData = (await res.json().catch(() => ({ message: "Error" }))) as { message: string };
+    error = errData.message ?? "Error de autenticación";
+  } catch {
+    error = "No se pudo conectar al servidor";
+  }
+}
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <title>Consultorio Las Gaviotas · Acceso</title>
+  </head>
+  <body style="background: var(--color-cream); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; font-family: var(--font-sans);">
+    <div style="width: 100%; max-width: 960px; display: grid; grid-template-columns: 1fr; gap: 0; border: 1px solid var(--color-gold); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-elevation);" class="login-card">
+
+      <!-- LEFT — Brass plate -->
+      <div style="background: var(--color-navy); color: var(--color-cream); padding: 48px 40px; display: flex; flex-direction: column; justify-content: space-between; min-height: 480px;">
+        <div>
+          <div style="display: inline-flex; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid var(--color-gold); border-radius: 4px; margin-bottom: 32px;">
+            <span style="font-family: var(--font-display); font-weight: 500; font-size: 13px; color: var(--color-gold); letter-spacing: 0.08em;">CLG</span>
+            <span style="width: 1px; height: 12px; background: var(--color-gold); opacity: 0.4;"></span>
+            <span style="font-family: var(--font-sans); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-gold);">Est. 2026</span>
+          </div>
+          <h1 style="font-family: var(--font-display); font-weight: 500; font-size: 40px; line-height: 1.05; letter-spacing: -0.02em; color: var(--color-cream); margin-bottom: 16px;">
+            Consultorio<br/><span style="font-style: italic; color: var(--color-gold);">Las Gaviotas</span>
+          </h1>
+          <p style="font-family: var(--font-display); font-style: italic; font-size: 17px; line-height: 1.5; color: var(--color-cream); opacity: 0.85; max-width: 360px;">
+            Una pequeña clínica privada en Barcelona, Estado Anzoátegui. Atención médica con la calidez de un hotel y la precisión de un hospital.
+          </p>
+        </div>
+
+        <div style="border-top: 1px solid var(--color-gold); padding-top: 20px; margin-top: 32px;">
+          <div style="font-family: var(--font-sans); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-gold); margin-bottom: 6px;">Dirección</div>
+          <div style="font-family: var(--font-sans); font-size: 13px; color: var(--color-cream); opacity: 0.85;">Barcelona, Anzoátegui · Venezuela</div>
+        </div>
+      </div>
+
+      <!-- RIGHT — Form -->
+      <div style="background: var(--color-cream); padding: 48px 40px;">
+        <div style="max-width: 360px; margin: 0 auto;">
+          <div style="font-family: var(--font-sans); font-weight: 500; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-gold); margin-bottom: 12px;">Acceso del personal</div>
+          <h2 style="font-family: var(--font-display); font-weight: 500; font-size: 28px; letter-spacing: -0.02em; color: var(--color-navy); margin-bottom: 6px;">Bienvenido.</h2>
+          <p style="font-size: 14px; color: var(--color-ink-2); margin-bottom: 32px;">Inicie sesión para continuar.</p>
+
+          {error && (
+            <div style="margin-bottom: 20px; padding: 12px 14px; background: var(--color-danger-soft); border: 1px solid var(--color-danger); border-radius: 6px; color: var(--color-danger); font-size: 13px;">
+              {error}
+            </div>
+          )}
+
+          <form method="POST" style="display: flex; flex-direction: column; gap: 18px;">
+            <div>
+              <label for="username" style="display: block; font-size: 12px; font-weight: 500; color: var(--color-navy); margin-bottom: 6px; letter-spacing: 0.04em;">Usuario</label>
+              <input id="username" name="username" type="text" required autocomplete="username" placeholder="admin" />
+            </div>
+            <div>
+              <label for="password" style="display: block; font-size: 12px; font-weight: 500; color: var(--color-navy); margin-bottom: 6px; letter-spacing: 0.04em;">Contraseña</label>
+              <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="••••••••" />
+            </div>
+            <button type="submit" class="btn btn-primary" style="justify-content: center; margin-top: 8px; padding: 12px;">
+              Ingresar
+            </button>
+          </form>
+
+          <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--color-rule);">
+            <div style="font-family: var(--font-sans); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-ink-2); margin-bottom: 8px;">Credenciales de prueba</div>
+            <div style="display: grid; grid-template-columns: auto auto auto; gap: 8px 12px; font-family: var(--font-mono); font-size: 12px;">
+              <span style="color: var(--color-navy);">admin</span><span style="color: var(--color-ink-2);">/</span><span style="color: var(--color-ink-2);">admin123</span>
+              <span style="color: var(--color-navy);">medico</span><span style="color: var(--color-ink-2);">/</span><span style="color: var(--color-ink-2);">medico123</span>
+              <span style="color: var(--color-navy);">recep</span><span style="color: var(--color-ink-2);">/</span><span style="color: var(--color-ink-2);">recep123</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <style is:global>
+      @media (min-width: 768px) {
+        .login-card { grid-template-columns: 1fr 1fr !important; }
+      }
+    </style>
+  </body>
+</html>

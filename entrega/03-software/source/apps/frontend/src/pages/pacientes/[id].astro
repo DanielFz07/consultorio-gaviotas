@@ -1,0 +1,147 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { api, isError } from "../../lib/api";
+
+const { id } = Astro.params;
+
+const r = await api.get<{
+  id: number;
+  cedula: string;
+  nombre: string;
+  apellido: string;
+  fecha_nacimiento: string | null;
+  telefono: string | null;
+  email: string | null;
+  direccion: string | null;
+  sexo: string;
+  antecedentes: string | null;
+  alergias: string | null;
+  historial: { id: number; fecha_apertura: string; cerrado: boolean } | null;
+}>(Astro, `/api/pacientes/${id}`);
+const paciente = r.ok && !isError(r.data) ? r.data : null;
+
+const fmtFecha = (f: string | null) => {
+  if (!f) return "—";
+  return new Date(f).toLocaleDateString("es-VE", { year: "numeric", month: "long", day: "numeric" });
+};
+const calcularEdad = (f: string | null) => {
+  if (!f) return null;
+  const hoy = new Date();
+  const nac = new Date(f);
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+  return edad;
+};
+
+const user = Astro.locals.user;
+
+const initials = `${paciente?.nombre?.[0] ?? ""}${paciente?.apellido?.[0] ?? ""}`.toUpperCase() || "P";
+---
+<Layout title={paciente ? `${paciente.apellido}, ${paciente.nombre}` : "Paciente"}>
+  {!paciente ? (
+    <div class="card text-center" style="padding: 64px 24px;">
+      <div class="font-display text-2xl italic mb-3" style="color: var(--color-navy);">Paciente no encontrado.</div>
+      <a href="/pacientes" class="btn btn-outline-navy mt-4 inline-flex">Volver a la lista</a>
+    </div>
+  ) : (
+    <>
+      <a href="/pacientes" class="inline-flex items-center gap-1.5 text-xs font-medium mb-6" style="color: var(--color-gold);">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        Volver a pacientes
+      </a>
+
+      <header class="mb-10">
+        <div class="flex items-start gap-6">
+          <div class="w-20 h-20 rounded-lg grid place-items-center font-display text-2xl font-medium" style="background: var(--color-navy); color: var(--color-gold); flex-shrink: 0;">{initials}</div>
+          <div class="flex-1 min-w-0">
+            <div class="eyebrow mb-2">Paciente</div>
+            <h1 class="display text-4xl font-medium leading-tight">{paciente.apellido}, {paciente.nombre}</h1>
+            <div class="flex items-center gap-4 mt-3 text-sm" style="color: var(--color-ink-2);">
+              <span class="col-mono">{paciente.cedula}</span>
+              {paciente.fecha_nacimiento && (
+                <>
+                  <span style="color: var(--color-rule);">·</span>
+                  <span>{fmtFecha(paciente.fecha_nacimiento)} · {calcularEdad(paciente.fecha_nacimiento)} años</span>
+                </>
+              )}
+              <span style="color: var(--color-rule);">·</span>
+              <span>{paciente.sexo}</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main column -->
+        <div class="lg:col-span-2 space-y-8">
+          <section class="card">
+            <div class="eyebrow mb-4">Contacto</div>
+            <dl class="grid grid-cols-2 gap-y-4 gap-x-6 text-sm">
+              <div>
+                <dt class="text-xs font-medium uppercase tracking-wider" style="color: var(--color-ink-2);">Teléfono</dt>
+                <dd class="font-medium mt-0.5 col-mono">{paciente.telefono ?? "—"}</dd>
+              </div>
+              <div>
+                <dt class="text-xs font-medium uppercase tracking-wider" style="color: var(--color-ink-2);">Email</dt>
+                <dd class="font-medium mt-0.5 break-all">{paciente.email ?? "—"}</dd>
+              </div>
+              <div class="col-span-2">
+                <dt class="text-xs font-medium uppercase tracking-wider" style="color: var(--color-ink-2);">Dirección</dt>
+                <dd class="font-medium mt-0.5">{paciente.direccion ?? "—"}</dd>
+              </div>
+            </dl>
+          </section>
+
+          {(paciente.antecedentes || paciente.alergias) && (
+            <section class="card">
+              <div class="eyebrow mb-4">Información clínica</div>
+              {paciente.antecedentes && (
+                <div class="mb-5">
+                  <div class="text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-ink-2);">Antecedentes</div>
+                  <p class="text-sm whitespace-pre-wrap leading-relaxed">{paciente.antecedentes}</p>
+                </div>
+              )}
+              {paciente.alergias && (
+                <div>
+                  <div class="text-xs font-medium uppercase tracking-wider mb-1.5" style="color: var(--color-ink-2);">Alergias</div>
+                  <p class="text-sm whitespace-pre-wrap leading-relaxed">{paciente.alergias}</p>
+                </div>
+              )}
+            </section>
+          )}
+        </div>
+
+        <!-- Right rail -->
+        <aside class="space-y-4">
+          {paciente.historial && (
+            <div class="card">
+              <div class="eyebrow mb-3">Historia clínica</div>
+              <div class="font-display text-xl font-medium" style="color: var(--color-navy);">#{paciente.historial.id}</div>
+              <div class="text-xs mt-1 col-mono" style="color: var(--color-ink-2);">Abierta {fmtFecha(paciente.historial.fecha_apertura)}</div>
+              <div class="mt-3">
+                <span class={`badge ${paciente.historial.cerrado ? "badge-warning" : "badge-success"}`}>
+                  {paciente.historial.cerrado ? "Cerrada" : "Activa"}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div class="card">
+            <div class="eyebrow mb-3">Acciones</div>
+            <div class="space-y-2">
+              <a href={`/citas/nueva?pacienteId=${paciente.id}`} class="btn btn-primary w-full justify-center">
+                Agendar cita
+              </a>
+              {user?.rol !== "RECEPCION" && (
+                <a href={`/consultas/nueva?pacienteId=${paciente.id}`} class="btn btn-outline-navy w-full justify-center">
+                  Iniciar consulta
+                </a>
+              )}
+            </div>
+          </div>
+        </aside>
+      </div>
+    </>
+  )}
+</Layout>

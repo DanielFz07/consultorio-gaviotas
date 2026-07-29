@@ -1,0 +1,15 @@
+---
+import { getApiUrl } from "../../../lib/api";
+const { id } = Astro.params;
+const fd = await Astro.request.formData();
+const motivo = fd.get("motivo")?.toString() ?? "Sin motivo";
+await fetch(`${getApiUrl()}/api/citas/${id}/cancelar`, {
+  method: "PATCH",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${Astro.cookies.get("consultorio-gaviotas_token")?.value}`,
+  },
+  body: JSON.stringify({ motivo }),
+});
+return Astro.redirect("/citas");
+---

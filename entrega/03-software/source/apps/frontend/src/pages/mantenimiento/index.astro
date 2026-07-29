@@ -1,0 +1,126 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { api, isError } from "../../lib/api";
+
+const user = Astro.locals.user;
+if (!user || user.rol !== "ADMIN") {
+  return Astro.redirect("/dashboard");
+}
+
+const backupsRes = await api.get<{ directorio: string; archivos: any[] }>(Astro, "/api/mantenimiento/backups");
+const backups = backupsRes.ok && !isError(backupsRes.data) ? backupsRes.data : { directorio: "", archivos: [] };
+
+let msg: { type: "success" | "error"; text: string } | null = null;
+if (Astro.request.method === "POST") {
+  const f = await Astro.request.formData();
+  const action = f.get("action")?.toString();
+  const token = Astro.cookies.get("consultorio-gaviotas_token")?.value ?? "";
+  const API_URL = (await import("../../lib/api")).getApiUrl();
+  if (action === "backup") {
+    const res = await fetch(`${API_URL}/api/mantenimiento/backup`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      const data = (await res.json()) as { filename: string; size_bytes: number };
+      msg = { type: "success", text: `Respaldo creado: ${data.filename} (${(data.size_bytes / 1024).toFixed(1)} KB)` };
+    } else {
+      msg = { type: "error", text: `Error al crear respaldo (${res.status})` };
+    }
+  } else if (action === "restore") {
+    const filename = f.get("filename")?.toString() ?? "";
+    if (!filename) {
+      msg = { type: "error", text: "Selecciona un respaldo" };
+    } else {
+      const res = await fetch(`${API_URL}/api/mantenimiento/restore`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ filename }),
+      });
+      if (res.ok) {
+        msg = { type: "success", text: `Base de datos restaurada desde ${filename}` };
+      } else {
+        msg = { type: "error", text: `Error al restaurar (${res.status})` };
+      }
+    }
+  }
+  return Astro.redirect(`/mantenimiento?msg=${encodeURIComponent(JSON.stringify(msg))}`);
+}
+
+const queryMsg = Astro.url.searchParams.get("msg");
+if (queryMsg) {
+  try { msg = JSON.parse(queryMsg); } catch {}
+}
+
+const fmtFecha = (f: string) => new Date(f).toLocaleString("es-VE");
+const fmtSize = (b: number) => b < 1024 ? `${b} B` : `${(b / 1024).toFixed(1)} KB`;
+---
+<Layout title="Mantenimiento">
+  <div class="mb-6">
+    <h1 class="font-display text-3xl font-bold text-ink">Mantenimiento</h1>
+    <p class="text-muted mt-1">Respaldo y restauración de la base de datos.</p>
+  </div>
+
+  {msg && (
+    <div class={`mb-5 p-4 rounded-xl ${msg.type === "success" ? "bg-brand-50 border border-brand-200 text-brand-800" : "bg-danger-soft border border-danger/20 text-danger"}`} style={msg.type === "success" ? "background:#e8ebf3;border-color:#b0bdd4;color:#08122a" : undefined}>
+      {msg.text}
+    </div>
+  )}
+
+  <div class="bg-white rounded-2xl border border-line shadow-sm p-6 mb-6">
+    <h2 class="font-display text-lg font-bold text-ink mb-4">Crear nuevo respaldo</h2>
+    <p class="text-sm text-muted mb-4">
+      Genera un dump completo de la base de datos (pg_dump). Se guarda en
+      <code class="px-1.5 py-0.5 bg-line-soft rounded text-xs font-mono">{backups.directorio}</code>.
+    </p>
+    <form method="POST" onsubmit="return confirm('¿Crear respaldo ahora?');">
+      <input type="hidden" name="action" value="backup" />
+      <button type="submit" class="btn btn-primary">
+        Crear respaldo ahora
+      </button>
+    </form>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-line shadow-sm overflow-hidden">
+    <div class="px-5 py-3 bg-line-soft/50 border-b border-line">
+      <h2 class="font-display text-lg font-bold text-ink">Respaldos disponibles</h2>
+    </div>
+    {backups.archivos.length === 0 ? (
+      <div class="p-12 text-center text-muted">
+        <p>No hay respaldos todavía. Creá el primero arriba.</p>
+      </div>
+    ) : (
+      <table class="w-full">
+        <thead class="bg-line-soft/30">
+          <tr class="text-left text-xs font-semibold text-muted uppercase tracking-wider">
+            <th class="px-5 py-3">Archivo</th>
+            <th class="px-5 py-3">Fecha</th>
+            <th class="px-5 py-3">Tamaño</th>
+            <th class="px-5 py-3 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-line">
+          {backups.archivos.map((b: any) => (
+            <tr class="hover:bg-line-soft/20">
+              <td class="px-5 py-3 font-mono text-sm">{b.nombre}</td>
+              <td class="px-5 py-3 text-sm text-muted">{fmtFecha(b.created_at)}</td>
+              <td class="px-5 py-3 text-sm">{fmtSize(b.size_bytes)}</td>
+              <td class="px-5 py-3 text-right">
+                <a href={`/api/mantenimiento/backup/${encodeURIComponent(b.nombre)}`} class="text-brand-600 hover:underline text-sm mr-3" style="color:#1a2c54">Descargar</a>
+                <form method="POST" class="inline" onsubmit="return confirm('¿Restaurar este respaldo? Sobrescribirá los datos actuales.');">
+                  <input type="hidden" name="action" value="restore" />
+                  <input type="hidden" name="filename" value={b.nombre} />
+                  <button type="submit" class="text-danger hover:underline text-sm font-semibold">Restaurar</button>
+                </form>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </div>
+
+  <div class="mt-6 p-4 rounded-xl bg-warning-soft border border-warning/20 text-sm text-warning">
+    <strong>Atención:</strong> Restaurar un respaldo sobrescribe TODOS los datos actuales. Esta acción queda registrada en la auditoría.
+  </div>
+</Layout>

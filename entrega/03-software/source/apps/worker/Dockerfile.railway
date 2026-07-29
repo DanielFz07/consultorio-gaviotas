@@ -1,0 +1,17 @@
+FROM oven/bun:1.1-alpine
+
+WORKDIR /app
+
+# Copy package files first for better layer caching
+COPY package.json ./
+RUN bun install --production --frozen-lockfile || bun install --production
+
+# Copy source
+COPY . .
+
+# Environment defaults
+ENV NODE_ENV=production \
+    WORKER_INTERVAL_MS=60000
+
+# Start
+CMD ["./start.sh"]

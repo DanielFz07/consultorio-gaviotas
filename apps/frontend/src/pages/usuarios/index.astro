@@ -1,0 +1,228 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { api, isError } from "../../lib/api";
+
+interface Usuario {
+  id: number;
+  username: string;
+  nombre: string;
+  email: string | null;
+  rol: "ADMIN" | "MEDICO" | "RECEPCION";
+  activo: boolean;
+  created_at: string;
+}
+
+const user = Astro.locals.user;
+if (!user || user.rol !== "ADMIN") {
+  return Astro.redirect("/dashboard");
+}
+
+const filtroRol = Astro.url.searchParams.get("rol") ?? "TODOS";
+const filtroEstado = Astro.url.searchParams.get("estado") ?? "TODOS";
+
+const r = await api.get<Usuario[]>(Astro, "/api/usuarios");
+const usuarios = r.ok && !isError(r.data) ? r.data : [];
+
+const visibles = usuarios.filter((u) => {
+  if (filtroRol !== "TODOS" && u.rol !== filtroRol) return false;
+  if (filtroEstado === "ACTIVOS" && !u.activo) return false;
+  if (filtroEstado === "INACTIVOS" && u.activo) return false;
+  return true;
+});
+
+const error = Astro.url.searchParams.get("error");
+const msg = Astro.url.searchParams.get("msg");
+const mensaje =
+  msg === "creado" ? "Usuario creado correctamente"
+  : msg === "actualizado" ? "Cambios guardados"
+  : msg === "eliminado" ? "Usuario desactivado"
+  : null;
+
+const rolBadge: Record<string, string> = {
+  ADMIN: "bg-amber-50 text-amber-700 border-amber-200",
+  MEDICO: "bg-brand-50 text-brand-700 border-brand-200",
+  RECEPCION: "bg-line-soft text-ink-2 border-line",
+};
+
+const roles = [
+  { value: "TODOS", label: "Todos" },
+  { value: "ADMIN", label: "Admin" },
+  { value: "MEDICO", label: "Médico" },
+  { value: "RECEPCION", label: "Recepción" },
+];
+
+const estados = [
+  { value: "TODOS", label: "Todos" },
+  { value: "ACTIVOS", label: "Activos" },
+  { value: "INACTIVOS", label: "Inactivos" },
+];
+
+const tabUrl = (rol: string, estado: string) => {
+  const p = new URLSearchParams();
+  if (rol !== "TODOS") p.set("rol", rol);
+  if (estado !== "TODOS") p.set("estado", estado);
+  const qs = p.toString();
+  return `/usuarios${qs ? `?${qs}` : ""}`;
+};
+
+const totalPorRol = (rol: Usuario["rol"]) => usuarios.filter((u) => u.rol === rol).length;
+const totalActivos = usuarios.filter((u) => u.activo).length;
+---
+<Layout title="Usuarios">
+  <div class="mb-6 flex items-end justify-between flex-wrap gap-4">
+    <div>
+      <h1 class="font-display text-3xl font-bold text-ink">Usuarios del sistema</h1>
+      <p class="text-muted mt-1">Gestión de cuentas y roles de acceso al consultorio.</p>
+    </div>
+    <a href="/usuarios/nuevo" class="btn btn-primary">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Nuevo usuario
+    </a>
+  </div>
+
+  {mensaje && (
+    <div class="mb-4 p-3.5 rounded-xl bg-success-soft border border-success/20 text-success text-sm flex items-center gap-2">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      {mensaje}
+    </div>
+  )}
+  {error && (
+    <div class="mb-4 p-3.5 rounded-xl bg-danger-soft border border-danger/20 text-danger text-sm">
+      {error}
+    </div>
+  )}
+
+  <div class="bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] overflow-hidden">
+    <div class="px-6 py-4 border-b border-line flex items-center gap-3 flex-wrap">
+      <div class="flex items-center gap-1 bg-line-soft rounded-xl p-1">
+        {roles.map((r) => (
+          <a
+            href={tabUrl(r.value, filtroEstado)}
+            class={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              filtroRol === r.value ? "bg-white text-ink shadow-sm" : "text-muted hover:text-ink"
+            }`}
+          >
+            {r.label}
+            <span class="ml-1.5 text-muted/70 tabular-nums">{r.value === "TODOS" ? usuarios.length : totalPorRol(r.value as Usuario["rol"])}</span>
+          </a>
+        ))}
+      </div>
+      <div class="flex items-center gap-1 bg-line-soft rounded-xl p-1 ml-auto">
+        {estados.map((e) => (
+          <a
+            href={tabUrl(filtroRol, e.value)}
+            class={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              filtroEstado === e.value ? "bg-white text-ink shadow-sm" : "text-muted hover:text-ink"
+            }`}
+          >
+            {e.label}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    {visibles.length === 0 ? (
+      <div class="px-6 py-20 text-center">
+        <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-brand-50 to-accent-50 grid place-items-center mb-4" style="background:linear-gradient(to bottom right,#e8ebf3,var(--color-accent-50))">
+          <svg class="w-10 h-10 text-brand-500" style="color:#0f1d3d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="7" r="4"/><path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1"/></svg>
+        </div>
+        <p class="font-display text-xl font-semibold text-ink">
+          {usuarios.length === 0 ? "Sin usuarios" : "Sin coincidencias"}
+        </p>
+        <p class="text-sm text-muted mt-1.5">
+          {usuarios.length === 0 ? "Crea el primer usuario para empezar." : "Prueba con otro filtro."}
+        </p>
+        {usuarios.length === 0 && (
+          <a href="/usuarios/nuevo" class="btn btn-primary">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Crear primer usuario
+          </a>
+        )}
+      </div>
+    ) : (
+      <table class="w-full">
+        <thead class="bg-line-soft/50 border-b border-line">
+          <tr class="text-left text-xs text-muted uppercase tracking-wider">
+            <th class="px-6 py-3 font-semibold">Usuario</th>
+            <th class="px-6 py-3 font-semibold">Username</th>
+            <th class="px-6 py-3 font-semibold">Rol</th>
+            <th class="px-6 py-3 font-semibold">Estado</th>
+            <th class="px-6 py-3 font-semibold text-right">Acción</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-line">
+          {visibles.map((u) => (
+            <tr class="hover:bg-line-soft/30 transition-colors">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class={`w-9 h-9 rounded-xl grid place-items-center text-xs font-semibold ${u.rol === "ADMIN" ? "bg-amber-100 text-amber-700" : u.rol === "MEDICO" ? "bg-brand-100 text-brand-700" : "bg-line-soft text-ink-2"}`} style={u.rol === "MEDICO" ? "background:#c9d0e0;color:var(--color-navy)" : undefined}>
+                    {u.nombre.split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase()}
+                  </div>
+                  <div>
+                    <a href={`/usuarios/${u.id}`} class="font-medium text-ink hover:text-brand-700 transition-colors">{u.nombre}</a>
+                    <div class="text-xs text-muted">{u.email || "sin email"}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 text-sm text-muted font-mono">@{u.username}</td>
+              <td class="px-6 py-4">
+                <span class={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${rolBadge[u.rol] || "bg-line-soft text-ink-2 border-line"}`} style={u.rol === "MEDICO" ? "background:#e8ebf3;color:var(--color-navy);border-color:#b0bdd4" : undefined}>
+                  {u.rol}
+                </span>
+              </td>
+              <td class="px-6 py-4">
+                {u.activo ? (
+                  <span class="inline-flex items-center gap-1.5 text-xs font-medium text-success">
+                    <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                    Activo
+                  </span>
+                ) : (
+                  <span class="inline-flex items-center gap-1.5 text-xs font-medium text-muted">
+                    <span class="w-1.5 h-1.5 rounded-full bg-muted/40"></span>
+                    Inactivo
+                  </span>
+                )}
+              </td>
+              <td class="px-6 py-4 text-right">
+                <a href={`/usuarios/${u.id}`} class="text-sm font-medium text-brand-600 hover:text-brand-700" style="color:#1a2c54">Editar</a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </div>
+
+  <div class="mt-6 bg-white rounded-2xl border border-line shadow-sm shadow-brand-900/[0.02] p-6">
+    <h2 class="font-semibold text-ink mb-1">Matriz de permisos</h2>
+    <p class="text-xs text-muted mb-4">Qué puede hacer cada rol en Consultorio Las Gaviotas.</p>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-xs text-muted uppercase tracking-wider border-b border-line">
+          <th class="pb-2 font-semibold">Acción</th>
+          <th class="pb-2 font-semibold text-center w-24">Admin</th>
+          <th class="pb-2 font-semibold text-center w-28">Médico</th>
+          <th class="pb-2 font-semibold text-center w-24">Recepción</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-line">
+        {[
+          ["Gestionar pacientes y citas", true, true, true],
+          ["Agendar / reprogramar / cancelar citas", true, true, true],
+          ["Abrir consulta, prescribir", true, true, false],
+          ["Cobrar factura", true, false, true],
+          ["Anular factura", true, false, false],
+          ["CRUD inventario y servicios", true, false, false],
+          ["Gestión de usuarios", true, false, false],
+        ].map(([accion, a, v, r]) => (
+          <tr>
+            <td class="py-2.5 text-ink">{accion}</td>
+            <td class="py-2.5 text-center">{a ? <span class="text-success">✓</span> : <span class="text-muted/40">—</span>}</td>
+            <td class="py-2.5 text-center">{v ? <span class="text-success">✓</span> : <span class="text-muted/40">—</span>}</td>
+            <td class="py-2.5 text-center">{r ? <span class="text-success">✓</span> : <span class="text-muted/40">—</span>}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</Layout>

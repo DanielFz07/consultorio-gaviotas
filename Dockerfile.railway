@@ -1,0 +1,40 @@
+FROM oven/bun:1.1-alpine
+
+# Install psql client for the start script
+RUN apk add --no-cache postgresql-client
+
+WORKDIR /app
+
+# Install backend + worker deps
+COPY apps/backend/package.json apps/backend/bun.lock* /app/backend/
+COPY apps/worker/package.json apps/worker/bun.lock* /app/worker/
+RUN cd /app/backend && bun install --production
+RUN cd /app/worker && bun install --production
+
+# Copy backend + worker source
+COPY apps/backend/ /app/backend/
+COPY apps/worker/ /app/worker/
+
+# Install frontend deps + build
+COPY apps/frontend/package.json apps/frontend/bun.lock* /app/frontend/
+RUN cd /app/frontend && bun install --frozen-lockfile || bun install
+COPY apps/frontend/ /app/frontend/
+RUN cd /app/frontend && bun run build
+
+# Copy shared scripts/db
+COPY scripts/ /app/scripts/
+COPY db/ /app/db/
+COPY deploy/start-all.sh /app/start-all.sh
+RUN chmod +x /app/start-all.sh
+
+ENV NODE_ENV=production \
+    UPLOAD_DIR=/data/uploads \
+    TAX_RATE=0.16 \
+    API_PORT=3001
+
+RUN mkdir -p /data/uploads
+
+EXPOSE 3001
+EXPOSE 8080
+
+CMD ["/app/start-all.sh"]
