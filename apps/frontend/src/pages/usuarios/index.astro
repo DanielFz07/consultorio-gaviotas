@@ -155,7 +155,7 @@ const totalActivos = usuarios.filter((u) => u.activo).length;
             <tr class="hover:bg-line-soft/30 transition-colors">
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
-                  <div class={`w-9 h-9 rounded-xl grid place-items-center text-xs font-semibold ${u.rol === "ADMIN" ? "bg-amber-100 text-amber-700" : u.rol === "MEDICO" ? "bg-brand-100 text-brand-700" : "bg-line-soft text-ink-2"}`} style={u.rol === "MEDICO" ? "background:#c9d0e0;color:var(--color-navy)" : undefined}>
+                  <div class={`w-9 h-9 rounded-xl grid place-items-center text-xs font-semibold ${u.rol === "ADMIN" ? "bg-amber-100 text-amber-700" : u.rol === "MEDICO" ? "badge-navy" : "bg-line-soft text-ink-2"}`}>
                     {u.nombre.split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase()}
                   </div>
                   <div>
@@ -166,7 +166,7 @@ const totalActivos = usuarios.filter((u) => u.activo).length;
               </td>
               <td class="px-6 py-4 text-sm text-muted font-mono">@{u.username}</td>
               <td class="px-6 py-4">
-                <span class={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${rolBadge[u.rol] || "bg-line-soft text-ink-2 border-line"}`} style={u.rol === "MEDICO" ? "background:#e8ebf3;color:var(--color-navy);border-color:#b0bdd4" : undefined}>
+                <span class={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${rolBadge[u.rol] || "bg-line-soft text-ink-2 border-line"}`}>
                   {u.rol}
                 </span>
               </td>

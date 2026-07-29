@@ -201,7 +201,7 @@
   --color-amber-50: #2a2010;
   --color-amber-100: #3d2e14;
   --color-amber-200: #6b5018;
-  --color-amber-700: #d4a04a;
+  --color-amber-700: #f0c674;
 
   --color-white: var(--color-surface); /* bg-white becomes elevated surface in dark */
   --color-black: var(--color-ink);    /* text-black becomes warm cream in dark */
